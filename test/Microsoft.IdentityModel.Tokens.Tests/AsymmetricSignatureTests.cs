@@ -51,6 +51,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
 
             try
             {
+                _ = new RsaSecurityKey(new RSAParameters());
                 new AsymmetricSignatureProvider(new RsaSecurityKey(new DerivedRsa(2048)), SecurityAlgorithms.RsaSha256, false);
                 expectedException.ProcessNoException();
             }

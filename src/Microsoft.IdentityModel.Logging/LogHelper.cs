@@ -354,6 +354,15 @@ namespace Microsoft.IdentityModel.Logging
             }
             else
             {
+                if (arg.GetType().GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+                {
+                    (string, bool) t = (ValueTuple<string, bool>)arg;
+
+                    if (t.Item2)
+                        return IdentityModelEventSource.HiddenPIIString;
+                    else
+                        return t.Item1;
+                }
                 return IdentityModelEventSource.HiddenPIIString;
             }
         }
