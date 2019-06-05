@@ -27,6 +27,9 @@
     <None Update="SamlpMessage.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SamlpMessageSignatureAsLastTheElement.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
