@@ -295,7 +295,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     if (header.Equals(lastHeader))
                         stringBuffer.Append(encodedValue);
                     else
-                        stringBuffer.AppendLine(encodedValue);
+                        // (https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3.2)
+                        // Encodes the name and value of the header as "name: value" and appends it to the string buffer separated by a newline "\n" character.
+                        //
+                        // GK: The spec holds a wrong example of the hash. Value "bZA981YJBrPlIzOvplbu3e7ueREXXr38vSkxIBYOaxI" is calculated using the "\r\n" separator, and not "\n".
+                        // Spec authors probably used Environment.NewLine or stringBuilder.AppendLine which appends "\r\n" on non-Unix platforms.
+                        // The correct hash value should be "P6z5XN4tTzHkfwe3XO1YvVUIurSuhvh_UG10N_j-aGs".
+                        stringBuffer.Append(encodedValue + "\n");
                 }
 
                 var stringBufferBytes = Encoding.UTF8.GetBytes(stringBuffer.ToString());
