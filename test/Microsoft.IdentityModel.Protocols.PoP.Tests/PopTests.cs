@@ -39,13 +39,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
         [Fact]
         public void MsalUsageSample()
         {
-            IPopAuthenticatorCreator httpAuthenticatorCreator = new PopAuthenticationHandler();
+            IPopAuthenticatorCreator popAuthenticatorCreator = new PopAuthenticationHandler();
 
             string popToken = "{obtain a token that posses a PoP key}";
             var popPrivateKey = new RsaSecurityKey(new RSACryptoServiceProvider(2048)) { KeyId = Guid.NewGuid().ToString() }; // set a key which public parts are used to create a pop token.
             SigningCredentials signingCredentials = new SigningCredentials(popPrivateKey, SecurityAlgorithms.RsaSha256); // set the key and the algorithm
 
-            // adjust the httpAuthenticatorCreationPolicy
+            // adjust the popAuthenticatorCreationPolicy
             var popAuthenticatorCreationParameters = new PopAuthenticatorCreationParameters()
             {
                 HttpMethod = "GET",
@@ -63,7 +63,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
 
             try
             {
-                var authenticator = httpAuthenticatorCreator.CreatePopAuthenticator(popToken, signingCredentials, popAuthenticatorCreationParameters);
+                var authenticator = popAuthenticatorCreator.CreatePopAuthenticator(popToken, signingCredentials, popAuthenticatorCreationParameters);
 
                 //4.1. 
                 var popHeader = PopUtilities.CreatePopHeader(authenticator);

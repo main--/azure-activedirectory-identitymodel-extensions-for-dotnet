@@ -64,16 +64,16 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorCreationParameters == null)
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorCreationParameters));
 
-            var header = CreateHttpAuthenticatorHeader(signingCredentials);
-            var payload = CreateHttpAuthenticatorPayload(tokenWithCnfClaim, popAuthenticatorCreationParameters);
-            return SignHttpAuthenticator(header, payload, signingCredentials);
+            var header = CreatePopAuthenticatorHeader(signingCredentials);
+            var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, popAuthenticatorCreationParameters);
+            return SignPopAuthenticator(header, payload, signingCredentials);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        protected virtual string CreateHttpAuthenticatorHeader(SigningCredentials signingCredentials)
+        protected virtual string CreatePopAuthenticatorHeader(SigningCredentials signingCredentials)
         {
             var header = new JObject
             {
@@ -96,7 +96,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="tokenWithCnfClaim"></param>
         /// <param name="popAuthenticatorCreationParameters"></param>
         /// <returns></returns>
-        protected virtual string CreateHttpAuthenticatorPayload(string tokenWithCnfClaim, PopAuthenticatorCreationParameters popAuthenticatorCreationParameters)
+        protected virtual string CreatePopAuthenticatorPayload(string tokenWithCnfClaim, PopAuthenticatorCreationParameters popAuthenticatorCreationParameters)
         {
             Dictionary<string, object> payload = new Dictionary<string, object>();
 
@@ -135,7 +135,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="payload"></param>
         /// <param name="signingCredentials"></param>
         /// <returns></returns>
-        protected virtual string SignHttpAuthenticator(string header, string payload, SigningCredentials signingCredentials)
+        protected virtual string SignPopAuthenticator(string header, string payload, SigningCredentials signingCredentials)
         {
             var cryptoFactory = signingCredentials.CryptoProviderFactory ?? signingCredentials.Key.CryptoProviderFactory;
             var signatureProvider = cryptoFactory.CreateForSigning(signingCredentials.Key, signingCredentials.Algorithm);
