@@ -239,13 +239,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!httpRequestUri.IsAbsoluteUri)
                 throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23001, httpRequestUri.OriginalString)));
 
-            var query = httpRequestUri.Query.TrimStart('?');
-            var queryParams = query.Split('&').Select(x => x.Split('=')).ToDictionary(x => x[0], x => x[1]);
-
             StringBuilder stringBuffer = new StringBuilder();
             List<string> queryParamNameList = new List<string>();
             try
             {
+                var queryString = httpRequestUri.Query.TrimStart('?');
+                var queryParams = queryString.Split('&').Select(x => x.Split('=')).Select(x => new KeyValuePair<string, string>(x[0], x[1])).ToList();
+
                 var lastQueryParam = queryParams.Last();
                 foreach (var queryParam in queryParams)
                 {
