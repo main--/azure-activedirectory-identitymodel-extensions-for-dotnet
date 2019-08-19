@@ -40,7 +40,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticationHandler : IPopAuthenticatorCreator
+    public class PopAuthenticationHandler : IPopAuthenticatorCreator, IPopAuthenticatorValidator
     {
         // All hashes SHALL be calculated using the SHA256 algorithm.
         // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
@@ -282,7 +282,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             StringBuilder stringBuffer = new StringBuilder();
             List<string> headerNameList = new List<string>();
-
             try
             {
                 var lastHeader = httpRequestHeaders.Last();
@@ -336,6 +335,18 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 throw new PopProtocolException("TODO", e);
             }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="authenticator"></param>
+        /// <param name="tokenValidationParameters"></param>
+        /// <param name="PopAuthenticatorValidationParameters"></param>
+        /// <returns></returns>
+        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationParameters PopAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
         }
     }
 }
