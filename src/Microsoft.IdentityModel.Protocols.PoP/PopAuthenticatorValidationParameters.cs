@@ -135,6 +135,16 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public bool ValidateB { get; set; } = false;
 
         /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.1
+        /// </summary>
+        public bool AcceptUncoveredQueryParameters { get; set; } = true;
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.2
+        /// </summary>
+        public bool AcceptUncoveredHeaders { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a delegate that will be used to check if the authenticator is replayed.
         /// </summary>
         public AuthenticatorReplayValidator AuthenticatorReplayValidator { get; set; }
