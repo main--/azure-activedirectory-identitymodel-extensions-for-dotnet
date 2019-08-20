@@ -125,7 +125,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorCreationParameters.CreateB)
                 AddBClaim(payload, popAuthenticatorCreationParameters.HttpRequestBody);
 
-            popAuthenticatorCreationParameters.ReplayProtectionClaimCreator?.Invoke(payload);
+            if (popAuthenticatorCreationParameters.CreateNonce)
+                AddNonceClaim(payload);
 
             return JObject.FromObject(payload).ToString(Formatting.None);
         }
@@ -340,6 +341,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="payload"></param>
+        protected virtual void AddNonceClaim(Dictionary<string, object> payload)
+        {
+            payload.Add(PopConstants.ClaimTypes.Nonce, Guid.NewGuid().ToString("N"));
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="authenticator"></param>
@@ -383,8 +393,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual void ValidateAuthenticator(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
         {
-            if (popAuthenticatorValidationParameters.AuthenticatorReplayValidator != null)
-                ValidateAuthenticatorReplay(jwtAuthenticator, popAuthenticatorValidationParameters);
+            popAuthenticatorValidationParameters.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
 
             ValidateAuthenticatorSignature(jwtAuthenticator, validatedToken, popAuthenticatorValidationParameters);
 
@@ -408,16 +417,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             if (popAuthenticatorValidationParameters.ValidateB)
                 ValidateBClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateAuthenticatorReplay(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
-        {
-            popAuthenticatorValidationParameters.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
         }
 
         /// <summary>

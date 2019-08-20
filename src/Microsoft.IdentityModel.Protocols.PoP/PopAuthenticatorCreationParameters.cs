@@ -33,12 +33,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     ///
     /// </summary>
-    /// <param name="payload"></param>
-    public delegate void ReplayProtectionClaimCreator(IDictionary<string, object> payload);
-
-    /// <summary>
-    ///
-    /// </summary>
     public class PopAuthenticatorCreationParameters
     {
         /// <summary>
@@ -61,6 +55,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// </summary>
         public IDictionary<string, string> HttpRequestHeaders { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool CreateNonce { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.Ts"/> claim should be created or not.
@@ -97,9 +96,5 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         public bool CreateB { get; set; } = false;
 
-        /// <summary>
-        ///
-        /// </summary>
-        public ReplayProtectionClaimCreator ReplayProtectionClaimCreator { get; set; }
     }
 }

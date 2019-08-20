@@ -91,6 +91,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             /// https://tools.ietf.org/html/rfc7800#section-3.1
             /// </summary>
             public const string Cnf = "cnf";
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public const string Nonce = "nonce";
         }
     }
 }

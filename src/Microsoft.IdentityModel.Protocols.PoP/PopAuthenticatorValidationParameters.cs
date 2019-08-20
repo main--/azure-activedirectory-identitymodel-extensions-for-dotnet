@@ -135,7 +135,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public bool ValidateB { get; set; } = false;
 
         /// <summary>
-        /// 
+        /// Gets or sets a delegate that will be used to check if the authenticator is replayed.
         /// </summary>
         public AuthenticatorReplayValidator AuthenticatorReplayValidator { get; set; }
     }
