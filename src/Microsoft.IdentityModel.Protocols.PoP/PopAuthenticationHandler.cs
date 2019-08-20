@@ -249,6 +249,18 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 var queryString = httpRequestUri.Query.TrimStart('?');
                 var queryParams = queryString.Split('&').Select(x => x.Split('=')).Select(x => new KeyValuePair<string, string>(x[0], x[1])).ToList();
 
+                // eliminate duplicate query params.
+                // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
+                // If a header or query parameter is repeated on either the outgoing request from the client or the
+                // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
+                var repeatedQueryParams = queryParams.GroupBy(x => x.Key, StringComparer.Ordinal).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
+
+                if (repeatedQueryParams.Any())
+                {
+                    LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23004, string.Join(", ", repeatedQueryParams)));
+                    queryParams.RemoveAll(x => repeatedQueryParams.Contains(x.Key));
+                }
+
                 var lastQueryParam = queryParams.Last();
                 foreach (var queryParam in queryParams)
                 {
