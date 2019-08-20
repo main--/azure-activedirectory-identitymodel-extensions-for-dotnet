@@ -40,5 +40,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23000 = "IDX23000: CryptoProviderFactory.CreateForVerifying returned null for key: '{0}', signatureAlgorithm: '{1}'.";
         public const string IDX23001 = "IDX23001: HttpRequestUri must be absolute. HttpRequestUri: '{0}'.";
         public const string IDX23002 = "IDX23002: The HTTP Method must be uppercase HTTP verb. HttpMethod: '{0}'.";
+        public const string IDX23003 = "IDX23003: The authenticator does not contain the 'at' claim. This claim is required to validate the authenticator.";
     }
 }

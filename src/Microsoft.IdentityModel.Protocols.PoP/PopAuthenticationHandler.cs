@@ -42,6 +42,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// </summary>
     public class PopAuthenticationHandler : IPopAuthenticatorCreator, IPopAuthenticatorValidator
     {
+        private readonly JsonWebTokenHandler _handler = new JsonWebTokenHandler();
+
         // All hashes SHALL be calculated using the SHA256 algorithm.
         // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
         private readonly HashAlgorithm _hash = SHA256.Create();
@@ -255,7 +257,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     if (!queryParam.Equals(lastQueryParam))
                         encodedValue += "&";
 
-                   stringBuffer.Append(encodedValue);
+                    stringBuffer.Append(encodedValue);
                 }
 
                 var stringBufferBytes = Encoding.UTF8.GetBytes(stringBuffer.ToString());
@@ -324,14 +326,14 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         {
             if (httpRequestBody == null || !httpRequestBody.Any())
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestBody));
-         
+
             try
             {
                 var hashedRequestBody = _hash.ComputeHash(httpRequestBody);
                 var base64UrlEncodedHash = Base64UrlEncoder.Encode(hashedRequestBody);
                 payload.Add(PopConstants.ClaimTypes.B, base64UrlEncodedHash);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new PopProtocolException("TODO", e);
             }
@@ -342,11 +344,204 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="authenticator"></param>
         /// <param name="tokenValidationParameters"></param>
-        /// <param name="PopAuthenticatorValidationParameters"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
         /// <returns></returns>
-        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationParameters PopAuthenticatorValidationParameters)
+        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            if (string.IsNullOrEmpty(authenticator))
+                throw LogHelper.LogArgumentNullException(nameof(authenticator));
+
+            if (tokenValidationParameters == null)
+                throw LogHelper.LogArgumentNullException(nameof(tokenValidationParameters));
+
+            if (popAuthenticatorValidationParameters == null)
+                throw LogHelper.LogArgumentNullException(nameof(PopAuthenticatorValidationParameters));
+
+            var jwtAuthenticator = _handler.ReadJsonWebToken(authenticator);
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken))
+            {
+                throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23003)));
+            }
+
+            var validatedToken = ValidateToken(accessToken, tokenValidationParameters) as JsonWebToken;
+            ValidateAuthenticator(jwtAuthenticator, validatedToken, popAuthenticatorValidationParameters);
+
+            return new PopAuthenticatorValidationResult()
+            {
+                AccessToken = validatedToken.EncodedToken,
+                Authenticator = jwtAuthenticator.EncodedToken,
+                ValidatedAccessToken = validatedToken
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="validatedToken"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <returns></returns>
+        protected virtual void ValidateAuthenticator(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            if (popAuthenticatorValidationParameters.AuthenticatorReplayValidator != null)
+                ValidateAuthenticatorReplay(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            ValidateAuthenticatorSignature(jwtAuthenticator, validatedToken, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateTs)
+                ValidateTsClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateM)
+                ValidateMClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateU)
+                ValidateUClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateP)
+                ValidatePClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateQ)
+                ValidateQClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateH)
+                ValidateHClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+
+            if (popAuthenticatorValidationParameters.ValidateB)
+                ValidateBClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateAuthenticatorReplay(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            popAuthenticatorValidationParameters.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="validatedToken"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateAuthenticatorSignature(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            var popKey = ResolvePopKey(validatedToken, popAuthenticatorValidationParameters);
+
+            if (!jwtAuthenticator.TryGetHeaderValue(JwtHeaderParameterNames.Alg, out string algorithm))
+            {
+                throw new PopProtocolException("TODO");
+            }
+            else
+            {
+                var signatureProvider = popKey.CryptoProviderFactory.CreateForVerifying(popKey, algorithm);
+
+                if (!signatureProvider.Verify(
+                 Encoding.UTF8.GetBytes(jwtAuthenticator.EncodedHeader + "." + jwtAuthenticator.EncodedPayload),
+                 Base64UrlEncoder.DecodeBytes(jwtAuthenticator.EncodedSignature)))
+                    throw new PopProtocolException("TODO");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="validatedToken"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKey(JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateTsClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateMClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateUClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidatePClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateQClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateHClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtAuthenticator"></param>
+        /// <param name="popAuthenticatorValidationParameters"></param>
+        protected virtual void ValidateBClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="tokenValidationParameters"></param>
+        /// <returns></returns>
+        protected virtual SecurityToken ValidateToken(string accessToken, TokenValidationParameters tokenValidationParameters)
+        {
+            var tokenValidationResult = _handler.ValidateToken(accessToken, tokenValidationParameters);
+
+            if (!tokenValidationResult.IsValid)
+            {
+                throw LogHelper.LogExceptionMessage(tokenValidationResult.Exception);
+            }
+
+            return tokenValidationResult.SecurityToken;
         }
     }
 }
