@@ -46,5 +46,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             return $"{PopConstants.Pop} {authenticator}";
         }
+
+        //todo: HttpRequestHeaders to IDictionary<string, string>
     }
 }
