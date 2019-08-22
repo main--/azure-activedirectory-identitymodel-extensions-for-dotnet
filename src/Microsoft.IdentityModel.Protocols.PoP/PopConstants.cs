@@ -96,6 +96,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             /// 
             /// </summary>
             public const string Nonce = "nonce";
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public const string Jwe = "jwe";
         }
     }
 }

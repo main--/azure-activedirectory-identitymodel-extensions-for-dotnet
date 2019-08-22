@@ -489,7 +489,90 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual SecurityKey ResolvePopKey(JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
+            if (popAuthenticatorValidationPolicy.PopKeyResolver != null)
+            {
+                return popAuthenticatorValidationPolicy.PopKeyResolver(validatedToken, popAuthenticatorValidationPolicy);
+            }
+
+            if (!validatedToken.TryGetPayloadValue(PopConstants.ClaimTypes.Cnf, out JObject cnf))
+                throw new PopProtocolException("TODO");
+
+            if (cnf.TryGetValue(JwtHeaderParameterNames.Jwk, StringComparison.Ordinal, out var jwk))
+                return ResolvePopKeyFromJwk(jwk.ToString());
+            else if (cnf.TryGetValue(PopConstants.ClaimTypes.Jwe, StringComparison.Ordinal, out var jwe))
+                return ResolvePopKeyFromJwe(jwe.ToString(), popAuthenticatorValidationPolicy);
+            else if (cnf.TryGetValue(JwtHeaderParameterNames.Jku, StringComparison.Ordinal, out var jku))
+                return ResolvePopKeyFromJku(jku.ToString(), popAuthenticatorValidationPolicy);
+            else if (cnf.TryGetValue(JwtHeaderParameterNames.Kid, StringComparison.Ordinal, out var kid))
+                return ResolvePopKeyFromKid(kid.ToString(), popAuthenticatorValidationPolicy);
+            else
+                throw new PopProtocolException("TODO");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwk"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKeyFromJwk(string jwk)
+        {
+            var jsonWebKey = new JsonWebKey(jwk);
+
+            if (JsonWebKeyConverter.TryConvertToSecurityKey(jsonWebKey, out var key))
+            {
+                if (key is AsymmetricSecurityKey)
+                    return key;
+                else
+                    throw new PopProtocolException("TODO");
+            }
+            else
+                throw new PopProtocolException("TODO");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKeyFromJwe(string v, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        {
+            // cnfdecryptionkey(s)
+            // cnfdecryptionkey resolver
+            // create tvp and call decrypt token (currently protected, make public)
+            // TryConvertToSymmetricSecurityKey
+
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jku"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKeyFromJku(string jku, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        {
+            // get kid
+            // allow custom httpclient
+            // utilize jsonwebkeyset
+            throw new PopProtocolException("TODO");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="kid"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKeyFromKid(string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        {
+            if (popAuthenticatorValidationPolicy.PopKeyIdentifier != null)
+                return popAuthenticatorValidationPolicy.PopKeyIdentifier(kid.ToString());
+            else
+            {
+                throw new PopProtocolException("TODO");
+            }
         }
 
         /// <summary>
