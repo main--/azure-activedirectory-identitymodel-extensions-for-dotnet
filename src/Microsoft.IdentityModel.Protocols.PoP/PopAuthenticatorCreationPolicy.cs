@@ -25,36 +25,17 @@
 //
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    public class PopAuthenticatorCreationParameters
+    public class PopAuthenticatorCreationPolicy
     {
         /// <summary>
         ///
         /// </summary>
         public PopAuthenticatorVersion PopAuthenticatorVersion { get; set; } = PopAuthenticatorVersion.Default;
-
-        /// <summary>
-        /// </summary>
-        public Uri HttpRequestUri { get; set; }
-
-        /// <summary>
-        /// </summary>
-        public string HttpMethod { get; set; }
-
-        /// <summary>
-        /// </summary>
-        public byte[] HttpRequestBody { get; set; }
-
-        /// <summary>
-        /// </summary>
-        public IDictionary<string, string> HttpRequestHeaders { get; set; }
 
         /// <summary>
         /// 
@@ -95,6 +76,5 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.B"/> claim should be created or not.
         /// </summary>
         public bool CreateB { get; set; } = false;
-
     }
 }

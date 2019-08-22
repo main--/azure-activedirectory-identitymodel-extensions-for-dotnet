@@ -30,7 +30,6 @@ using System;
 using Xunit;
 using System.Security.Cryptography;
 using System.Collections.Generic;
-using System.Net.Http;
 
 namespace Microsoft.IdentityModel.Protocols.PoP.Tests
 {
@@ -45,13 +44,22 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
             var popPrivateKey = new RsaSecurityKey(new RSACryptoServiceProvider(2048)) { KeyId = Guid.NewGuid().ToString() }; // set a key which public parts are used to create a pop token.
             SigningCredentials signingCredentials = new SigningCredentials(popPrivateKey, SecurityAlgorithms.RsaSha256); // set the key and the algorithm
 
-            // adjust the popAuthenticatorCreationPolicy
-            var popAuthenticatorCreationParameters = new PopAuthenticatorCreationParameters()
+            // set the HttpRequestData
+            var httpRequestData = new HttpRequestData()
             {
                 HttpMethod = "GET",
                 HttpRequestUri = new Uri("https://www.contoso.com:443/it/requests?b=bar&a=foo&c=duck"),
                 HttpRequestBody = Guid.NewGuid().ToByteArray(),
-                HttpRequestHeaders = new Dictionary<string, string>() { { "Content-Type", "application/json" }, { "Etag", "742-3u8f34-3r2nvv3" } },
+                HttpRequestHeaders = new List<KeyValuePair<string, IEnumerable<string>>>
+                {
+                    new KeyValuePair<string, IEnumerable<string>>("Content-Type", new List<string> { "application/json" }),
+                    new KeyValuePair<string, IEnumerable<string>>("Etag", new List<string> { "742-3u8f34-3r2nvv3" }),
+                }
+            };
+
+            // adjust the PopAuthenticatorCreationPolicy
+            var popAuthenticatorCreationPolicy = new PopAuthenticatorCreationPolicy()
+            {
                 CreateTs = true,
                 CreateM = true,
                 CreateP = true,
@@ -63,7 +71,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
 
             try
             {
-                var authenticator = popAuthenticatorCreator.CreatePopAuthenticator(popToken, signingCredentials, popAuthenticatorCreationParameters);
+                var authenticator = popAuthenticatorCreator.CreatePopAuthenticator(popToken, signingCredentials, httpRequestData, popAuthenticatorCreationPolicy);
 
                 //4.1. 
                 var popHeader = PopUtilities.CreatePopHeader(authenticator);

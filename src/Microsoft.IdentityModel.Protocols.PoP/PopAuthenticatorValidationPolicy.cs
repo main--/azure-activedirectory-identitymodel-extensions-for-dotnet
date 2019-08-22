@@ -27,6 +27,7 @@
 
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
@@ -41,7 +42,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticatorValidationParameters
+    public class PopAuthenticatorValidationPolicy
     {
         /// <summary>
         ///

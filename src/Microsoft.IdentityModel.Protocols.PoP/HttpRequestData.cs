@@ -25,23 +25,30 @@
 //
 //------------------------------------------------------------------------------
 
-using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface IPopAuthenticatorCreator
+    public class HttpRequestData
     {
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="tokenWithCnfClaim"></param>
-        /// <param name="signingCredentials"></param>
-        /// <param name="httpRequestData"></param>
-        /// <param name="popAuthenticatorCreationPolicy"></param>
-        /// <returns></returns>
-        string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy);
+        public Uri HttpRequestUri { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public string HttpMethod { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public byte[] HttpRequestBody { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public IEnumerable<KeyValuePair<string, IEnumerable<string>>> HttpRequestHeaders { get; set; }
     }
 }

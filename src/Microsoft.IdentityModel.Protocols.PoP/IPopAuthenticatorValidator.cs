@@ -38,9 +38,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="authenticator"></param>
+        /// <param name="httpRequestData"></param>
         /// <param name="tokenValidationParameters"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters);
+        PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy);
     }
 }

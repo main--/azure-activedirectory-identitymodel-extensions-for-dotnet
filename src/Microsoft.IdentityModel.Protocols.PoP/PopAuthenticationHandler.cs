@@ -53,9 +53,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="tokenWithCnfClaim"></param>
         /// <param name="signingCredentials"></param>
-        /// <param name="popAuthenticatorCreationParameters"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="popAuthenticatorCreationPolicy"></param>
         /// <returns></returns>
-        public virtual string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, PopAuthenticatorCreationParameters popAuthenticatorCreationParameters)
+        public virtual string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (string.IsNullOrEmpty(tokenWithCnfClaim))
                 throw LogHelper.LogArgumentNullException(nameof(tokenWithCnfClaim));
@@ -63,11 +64,14 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (signingCredentials == null)
                 throw LogHelper.LogArgumentNullException(nameof(signingCredentials));
 
-            if (popAuthenticatorCreationParameters == null)
-                throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorCreationParameters));
+            if (httpRequestData == null)
+                throw LogHelper.LogArgumentNullException(nameof(httpRequestData));
+
+            if (popAuthenticatorCreationPolicy == null)
+                throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorCreationPolicy));
 
             var header = CreatePopAuthenticatorHeader(signingCredentials);
-            var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, popAuthenticatorCreationParameters);
+            var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, httpRequestData, popAuthenticatorCreationPolicy);
             return SignPopAuthenticator(header, payload, signingCredentials);
         }
 
@@ -96,36 +100,37 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="tokenWithCnfClaim"></param>
-        /// <param name="popAuthenticatorCreationParameters"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="popAuthenticatorCreationPolicy"></param>
         /// <returns></returns>
-        protected virtual string CreatePopAuthenticatorPayload(string tokenWithCnfClaim, PopAuthenticatorCreationParameters popAuthenticatorCreationParameters)
+        protected virtual string CreatePopAuthenticatorPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             Dictionary<string, object> payload = new Dictionary<string, object>();
 
             AddAtClaim(payload, tokenWithCnfClaim);
 
-            if (popAuthenticatorCreationParameters.CreateTs)
+            if (popAuthenticatorCreationPolicy.CreateTs)
                 AddTsClaim(payload);
 
-            if (popAuthenticatorCreationParameters.CreateM)
-                AddMClaim(payload, popAuthenticatorCreationParameters.HttpMethod);
+            if (popAuthenticatorCreationPolicy.CreateM)
+                AddMClaim(payload, httpRequestData.HttpMethod);
 
-            if (popAuthenticatorCreationParameters.CreateU)
-                AddUClaim(payload, popAuthenticatorCreationParameters.HttpRequestUri);
+            if (popAuthenticatorCreationPolicy.CreateU)
+                AddUClaim(payload, httpRequestData.HttpRequestUri);
 
-            if (popAuthenticatorCreationParameters.CreateP)
-                AddPClaim(payload, popAuthenticatorCreationParameters.HttpRequestUri);
+            if (popAuthenticatorCreationPolicy.CreateP)
+                AddPClaim(payload, httpRequestData.HttpRequestUri);
 
-            if (popAuthenticatorCreationParameters.CreateQ)
-                AddQClaim(payload, popAuthenticatorCreationParameters.HttpRequestUri);
+            if (popAuthenticatorCreationPolicy.CreateQ)
+                AddQClaim(payload, httpRequestData.HttpRequestUri);
 
-            if (popAuthenticatorCreationParameters.CreateH)
-                AddHClaim(payload, popAuthenticatorCreationParameters.HttpRequestHeaders);
+            if (popAuthenticatorCreationPolicy.CreateH)
+                AddHClaim(payload, httpRequestData.HttpRequestHeaders);
 
-            if (popAuthenticatorCreationParameters.CreateB)
-                AddBClaim(payload, popAuthenticatorCreationParameters.HttpRequestBody);
+            if (popAuthenticatorCreationPolicy.CreateB)
+                AddBClaim(payload, httpRequestData.HttpRequestBody);
 
-            if (popAuthenticatorCreationParameters.CreateNonce)
+            if (popAuthenticatorCreationPolicy.CreateNonce)
                 AddNonceClaim(payload);
 
             return JObject.FromObject(payload).ToString(Formatting.None);
@@ -258,7 +263,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 if (repeatedQueryParams.Any())
                 {
                     LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23004, string.Join(", ", repeatedQueryParams)));
-                    queryParams.RemoveAll(x => repeatedQueryParams.Contains(x.Key));
+                    queryParams.RemoveAll(x => repeatedQueryParams.Contains(x.Key, StringComparer.Ordinal));
                 }
 
                 var lastQueryParam = queryParams.Last();
@@ -290,7 +295,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="httpRequestHeaders"></param>
-        protected virtual void AddHClaim(Dictionary<string, object> payload, IDictionary<string, string> httpRequestHeaders)
+        protected virtual void AddHClaim(Dictionary<string, object> payload, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders)
         {
             if (httpRequestHeaders == null || !httpRequestHeaders.Any())
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestHeaders));
@@ -299,13 +304,25 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             List<string> headerNameList = new List<string>();
             try
             {
+                // eliminate duplicate headers.
+                // todo: create util
+                // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
+                // If a header or query parameter is repeated on either the outgoing request from the client or the
+                // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
+                var repeatedHeaders = httpRequestHeaders.GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
+                if (repeatedHeaders.Any())
+                {
+                    LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23005, string.Join(", ", repeatedHeaders)));
+                    httpRequestHeaders = httpRequestHeaders.Where(x => !repeatedHeaders.Contains(x.Key, StringComparer.OrdinalIgnoreCase));
+                }
+
                 var lastHeader = httpRequestHeaders.Last();
                 foreach (var header in httpRequestHeaders)
                 {
                     var headerName = header.Key.ToLower();
                     headerNameList.Add(headerName);
 
-                    var encodedValue = $"{headerName}: {header.Value}";
+                    var encodedValue = $"{headerName}: {string.Join(", ", header.Value)}";
                     if (header.Equals(lastHeader))
                         stringBuffer.Append(encodedValue);
                     else
@@ -365,28 +382,28 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         ///
         /// </summary>
         /// <param name="authenticator"></param>
+        /// <param name="httpRequestData"></param>
         /// <param name="tokenValidationParameters"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             if (string.IsNullOrEmpty(authenticator))
                 throw LogHelper.LogArgumentNullException(nameof(authenticator));
 
-            if (tokenValidationParameters == null)
-                throw LogHelper.LogArgumentNullException(nameof(tokenValidationParameters));
+            if (httpRequestData == null)
+                throw LogHelper.LogArgumentNullException(nameof(httpRequestData));
 
-            if (popAuthenticatorValidationParameters == null)
-                throw LogHelper.LogArgumentNullException(nameof(PopAuthenticatorValidationParameters));
+            if (popAuthenticatorValidationPolicy == null)
+                throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
             var jwtAuthenticator = _handler.ReadJsonWebToken(authenticator);
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken))
             {
                 throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23003)));
             }
-
             var validatedToken = ValidateToken(accessToken, tokenValidationParameters) as JsonWebToken;
-            ValidateAuthenticator(jwtAuthenticator, validatedToken, popAuthenticatorValidationParameters);
+            ValidateAuthenticator(jwtAuthenticator, validatedToken, httpRequestData, popAuthenticatorValidationPolicy);
 
             return new PopAuthenticatorValidationResult()
             {
@@ -401,34 +418,35 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
         /// <param name="validatedToken"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        protected virtual void ValidateAuthenticator(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        protected virtual void ValidateAuthenticator(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            popAuthenticatorValidationParameters.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
+            popAuthenticatorValidationPolicy.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
 
-            ValidateAuthenticatorSignature(jwtAuthenticator, validatedToken, popAuthenticatorValidationParameters);
+            ValidateAuthenticatorSignature(jwtAuthenticator, validatedToken, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateTs)
-                ValidateTsClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateTs)
+                ValidateTsClaim(jwtAuthenticator, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateM)
-                ValidateMClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateM)
+                ValidateMClaim(jwtAuthenticator, httpRequestData.HttpMethod, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateU)
-                ValidateUClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateU)
+                ValidateUClaim(jwtAuthenticator, httpRequestData.HttpRequestUri, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateP)
-                ValidatePClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateP)
+                ValidatePClaim(jwtAuthenticator, httpRequestData.HttpRequestUri, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateQ)
-                ValidateQClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateQ)
+                ValidateQClaim(jwtAuthenticator, httpRequestData.HttpRequestUri, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateH)
-                ValidateHClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateH)
+                ValidateHClaim(jwtAuthenticator, httpRequestData.HttpRequestHeaders, popAuthenticatorValidationPolicy);
 
-            if (popAuthenticatorValidationParameters.ValidateB)
-                ValidateBClaim(jwtAuthenticator, popAuthenticatorValidationParameters);
+            if (popAuthenticatorValidationPolicy.ValidateB)
+                ValidateBClaim(jwtAuthenticator, httpRequestData.HttpRequestBody, popAuthenticatorValidationPolicy);
         }
 
         /// <summary>
@@ -436,10 +454,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
         /// <param name="validatedToken"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateAuthenticatorSignature(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateAuthenticatorSignature(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            var popKey = ResolvePopKey(validatedToken, popAuthenticatorValidationParameters);
+            var popKey = ResolvePopKey(validatedToken, popAuthenticatorValidationPolicy);
 
             if (!jwtAuthenticator.TryGetHeaderValue(JwtHeaderParameterNames.Alg, out string algorithm))
             {
@@ -460,9 +478,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="validatedToken"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKey(JsonWebToken validatedToken, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        protected virtual SecurityKey ResolvePopKey(JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -471,8 +489,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateTsClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateTsClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -481,8 +499,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateMClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpMethod"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateMClaim(JsonWebToken jwtAuthenticator, string httpMethod, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -491,8 +510,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateUClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpRequestUri"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateUClaim(JsonWebToken jwtAuthenticator, Uri httpRequestUri, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -501,8 +521,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidatePClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpRequestUri"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidatePClaim(JsonWebToken jwtAuthenticator, Uri httpRequestUri, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -511,8 +532,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateQClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpRequestUri"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateQClaim(JsonWebToken jwtAuthenticator, Uri httpRequestUri, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -521,8 +543,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateHClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpRequestHeaders"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateHClaim(JsonWebToken jwtAuthenticator, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -531,8 +554,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jwtAuthenticator"></param>
-        /// <param name="popAuthenticatorValidationParameters"></param>
-        protected virtual void ValidateBClaim(JsonWebToken jwtAuthenticator, PopAuthenticatorValidationParameters popAuthenticatorValidationParameters)
+        /// <param name="httpRequestBody"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        protected virtual void ValidateBClaim(JsonWebToken jwtAuthenticator, byte[] httpRequestBody, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             throw new NotImplementedException();
         }
@@ -545,6 +569,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual SecurityToken ValidateToken(string accessToken, TokenValidationParameters tokenValidationParameters)
         {
+            if (tokenValidationParameters == null)
+                throw LogHelper.LogArgumentNullException(nameof(tokenValidationParameters));
+
             var tokenValidationResult = _handler.ValidateToken(accessToken, tokenValidationParameters);
 
             if (!tokenValidationResult.IsValid)
