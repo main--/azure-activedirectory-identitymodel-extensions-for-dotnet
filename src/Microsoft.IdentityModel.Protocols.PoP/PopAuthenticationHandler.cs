@@ -43,6 +43,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     public class PopAuthenticationHandler : IPopAuthenticatorCreator, IPopAuthenticatorValidator
     {
         private readonly JsonWebTokenHandler _handler = new JsonWebTokenHandler();
+        private readonly Uri _baseUriHelper = new Uri("http://localhost", UriKind.Absolute);
 
         // All hashes SHALL be calculated using the SHA256 algorithm.
         // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
@@ -229,7 +230,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestUri));
 
             if (!httpRequestUri.IsAbsoluteUri)
-                throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23001, httpRequestUri.OriginalString)));
+            {
+                if (!Uri.TryCreate(_baseUriHelper, httpRequestUri, out httpRequestUri))
+                    throw new PopProtocolException("TODO");
+            }
 
             payload.Add(PopConstants.ClaimTypes.P, httpRequestUri.AbsolutePath.TrimEnd('/'));
         }
@@ -245,7 +249,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestUri));
 
             if (!httpRequestUri.IsAbsoluteUri)
-                throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23001, httpRequestUri.OriginalString)));
+            {
+                 if (!Uri.TryCreate(_baseUriHelper, httpRequestUri, out httpRequestUri))
+                    throw new PopProtocolException("TODO");
+            }
 
             StringBuilder stringBuffer = new StringBuilder();
             List<string> queryParamNameList = new List<string>();
