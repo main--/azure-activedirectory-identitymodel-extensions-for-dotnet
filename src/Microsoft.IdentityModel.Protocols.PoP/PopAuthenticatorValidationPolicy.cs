@@ -29,6 +29,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
@@ -54,6 +55,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <param name="jwtAuthenticator"></param>
     /// <returns></returns>
     public delegate void AuthenticatorReplayValidator(JsonWebToken jwtAuthenticator);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="jwe"></param>
+    /// <returns></returns>
+    public delegate IEnumerable<SecurityKey> CnfDecryptionKeysResolver(JsonWebToken jwe);
 
     /// <summary>
     /// 
@@ -179,10 +187,20 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// 
         /// </summary>
+        public CnfDecryptionKeysResolver CnfDecryptionKeysResolver { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public HttpClient HttpClientForJkuResourceRetrieval { get; set; }
 
         /// <summary>
         /// </summary>
         public bool RequireHttpsForJkuResourceRetrieval { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<SecurityKey> CnfDecryptionKeys { get; set; }
     }
 }

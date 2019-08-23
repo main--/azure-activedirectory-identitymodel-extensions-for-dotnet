@@ -364,7 +364,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestBody"></param>
         protected virtual void AddBClaim(Dictionary<string, object> payload, byte[] httpRequestBody)
         {
-            if (httpRequestBody == null || !httpRequestBody.Any())
+            if (httpRequestBody == null || httpRequestBody.Count() == 0)
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestBody));
 
             try
@@ -546,17 +546,47 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="jwe"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKeyFromJwe(string v, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual SecurityKey ResolvePopKeyFromJwe(string jwe, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            // cnfdecryptionkey(s)
-            // cnfdecryptionkey resolver
-            // create tvp and call decrypt token (currently protected, make public)
-            // TryConvertToSymmetricSecurityKey
+            var jsonWebToken = _handler.ReadJsonWebToken(jwe);
 
-            throw new NotImplementedException();
+            IEnumerable<SecurityKey> decryptionKeys;
+            if (popAuthenticatorValidationPolicy.CnfDecryptionKeysResolver != null)
+                decryptionKeys = popAuthenticatorValidationPolicy.CnfDecryptionKeysResolver(jsonWebToken);
+            else
+                decryptionKeys = popAuthenticatorValidationPolicy.CnfDecryptionKeys;
+
+            if (decryptionKeys == null || !decryptionKeys.Any())
+                throw new PopProtocolException("TODO");
+
+            var tokenDecryptionParameters = new TokenValidationParameters()
+            {
+                TokenDecryptionKeys = decryptionKeys,
+                RequireSignedTokens = false,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = false,
+                ValidateIssuerSigningKey = false,
+            };
+
+            JsonWebKey jsonWebKey;
+            try
+            {
+                var decryptedJson = _handler.DecryptToken(jsonWebToken, tokenDecryptionParameters);
+                jsonWebKey = new JsonWebKey(decryptedJson);
+            }
+            catch (Exception)
+            {
+                throw new PopProtocolException("TODO");
+            }
+
+            if (JsonWebKeyConverter.TryConvertToSymmetricSecurityKey(jsonWebKey, out var symmetricKey))
+                return symmetricKey;
+            else
+                throw new PopProtocolException("TODO");
         }
 
         /// <summary>
