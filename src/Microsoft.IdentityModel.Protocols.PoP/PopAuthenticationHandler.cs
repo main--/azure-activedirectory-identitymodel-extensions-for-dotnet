@@ -537,9 +537,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw new PopProtocolException("TODO");
 
             DateTime utcNow = DateTime.UtcNow;
-            DateTime authenticatorExpirationTime = EpochTime.DateTime(tsClaimValue);
+            DateTime authenticatorCreationTime = EpochTime.DateTime(tsClaimValue);
+            DateTime authenticatorExpirationTime = authenticatorCreationTime.Add(popAuthenticatorValidationPolicy.AuthenticatorLifetime).Add(popAuthenticatorValidationPolicy.ClockSkew);
 
-            if (authenticatorExpirationTime > DateTimeUtil.Add(utcNow, popAuthenticatorValidationPolicy.ClockSkew))
+            if (utcNow > authenticatorExpirationTime)
                 throw new PopProtocolException("TODO");
         }
 
