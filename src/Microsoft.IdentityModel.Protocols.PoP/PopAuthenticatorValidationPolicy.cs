@@ -29,6 +29,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Net.Http;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -174,5 +175,14 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         public PopKeyIdentifier PopKeyIdentifier { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HttpClient HttpClientForJkuResourceRetrieval { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public bool RequireHttpsForJkuResourceRetrieval { get; set; } = true;
     }
 }

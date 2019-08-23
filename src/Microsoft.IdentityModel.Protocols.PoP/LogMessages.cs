@@ -41,5 +41,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23003 = "IDX23003: The authenticator does not contain the 'at' claim. This claim is required to validate the authenticator.";
         public const string IDX23004 = "IDX23004: The following query parameters will not be included in the Q claim as they are repeated: '{0}'.";
         public const string IDX23005 = "IDX23005: The following headers will not be included in the H claim as they are repeated: '{0}'.";
+        public const string IDX23006 = "IDX23006: The address specified '{0}' is not valid as per HTTPS scheme. Please specify an https address for security reasons. For testing with an http address, set the RequireHttpsForJkuResourceRetrieval property on PopAuthenticatorValidationPolicy to false.";
     }
 }

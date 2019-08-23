@@ -567,7 +567,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual SecurityKey ResolvePopKeyFromJku(string jku, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            var popKeys = GetPopKeys(jku);
+            var popKeys = GetPopKeys(jku, popAuthenticatorValidationPolicy);
             var popKeyCount = popKeys.Count;
 
             if (popKeyCount == 0)
@@ -587,7 +587,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual SecurityKey ResolvePopKeyFromJku(string jku, string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            var popKeys = GetPopKeys(jku);
+            var popKeys = GetPopKeys(jku, popAuthenticatorValidationPolicy);
             foreach (var key in popKeys)
             {
                 if (string.Equals(key.KeyId, kid.ToString(), StringComparison.Ordinal))
@@ -601,19 +601,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="jkuSetUrl"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <returns></returns>
-        protected virtual IList<SecurityKey> GetPopKeys(string jkuSetUrl)
+        protected virtual IList<SecurityKey> GetPopKeys(string jkuSetUrl, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             try
             {
-                // ensure TLS and allow user-set HttpClient
+                var httpClient = popAuthenticatorValidationPolicy.HttpClientForJkuResourceRetrieval ?? _defaultHttpClient;
 
-                // The protocol used to acquire the resource MUST provide integrity
-                // protection.An HTTP GET request to retrieve the JWK Set MUST use TLS
-                // [RFC5246] and the identity of the server MUST be validated, as per Section 6 of RFC 6125[RFC6125].
+                if (!Utility.IsHttps(jkuSetUrl) && popAuthenticatorValidationPolicy.RequireHttpsForJkuResourceRetrieval)
+                    throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23006, jkuSetUrl)));
 
-                //var httpClient = HttpClient ?? _defaultHttpClient;
-                var httpClient = _defaultHttpClient;
                 var response = httpClient.GetAsync(jkuSetUrl).ConfigureAwait(false).GetAwaiter().GetResult();
                 var jsonWebKey = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
                 var jsonWebKeySet = new JsonWebKeySet(jsonWebKey);
