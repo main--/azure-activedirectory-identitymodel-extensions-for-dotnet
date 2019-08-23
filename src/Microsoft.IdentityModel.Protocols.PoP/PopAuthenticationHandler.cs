@@ -561,9 +561,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw new PopProtocolException("TODO");
 
             if (!string.Equals(expectedHttpMethod, httpMethod, StringComparison.Ordinal))
-            {
                 throw new PopProtocolException("TODO");
-            }
         }
 
         /// <summary>
@@ -587,7 +585,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw new PopProtocolException("TODO");
 
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.U, out string uClaimValue))
-                throw new PopProtocolException("TODO");
+                throw LogHelper.LogExceptionMessage(new PopProtocolException(LogHelper.FormatInvariant(LogMessages.IDX23001, httpRequestUri.OriginalString)));
 
             var expectedUClaimValue = httpRequestUri.Host;
             var expectedUClaimValueIncludingPort = $"{expectedUClaimValue}:{httpRequestUri.Port}";
