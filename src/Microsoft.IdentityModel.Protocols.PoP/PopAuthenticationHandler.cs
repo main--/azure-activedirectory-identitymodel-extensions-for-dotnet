@@ -705,9 +705,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 return popAuthenticatorValidationPolicy.PopKeyResolver(validatedToken, popAuthenticatorValidationPolicy);
             }
 
-            if (!validatedToken.TryGetPayloadValue(PopConstants.ClaimTypes.Cnf, out JObject cnf))
-                throw new PopProtocolException("TODO");
-
+            var cnf = new JObject(GetCnfClaimValue(validatedToken));
             if (cnf.TryGetValue(JwtHeaderParameterNames.Jwk, StringComparison.Ordinal, out var jwk))
             {
                 return ResolvePopKeyFromJwk(jwk.ToString());
@@ -727,6 +725,22 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 return ResolvePopKeyFromKid(kid.ToString(), popAuthenticatorValidationPolicy);
             }
+            else
+                throw new PopProtocolException("TODO");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="validatedToken"></param>
+        /// <returns></returns>
+        protected virtual string GetCnfClaimValue(JsonWebToken validatedToken)
+        {
+            if (validatedToken == null)
+                throw LogHelper.LogArgumentNullException(nameof(validatedToken));
+
+            if (validatedToken.TryGetPayloadValue(PopConstants.ClaimTypes.Cnf, out JObject cnf))
+                return cnf.ToString();
             else
                 throw new PopProtocolException("TODO");
         }
@@ -894,7 +908,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
             if (popAuthenticatorValidationPolicy.PopKeyIdentifier != null)
-                return popAuthenticatorValidationPolicy.PopKeyIdentifier(kid.ToString());
+                return popAuthenticatorValidationPolicy.PopKeyIdentifier(kid);
             else
             {
                 throw new PopProtocolException("TODO");
