@@ -696,14 +696,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (validatedToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(validatedToken));
 
-            if (popAuthenticatorValidationPolicy == null)
-                throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
-
-            if (popAuthenticatorValidationPolicy.PopKeyResolver != null)
-            {
-                return popAuthenticatorValidationPolicy.PopKeyResolver(validatedToken, popAuthenticatorValidationPolicy);
-            }
-
             var cnf = new JObject(GetCnfClaimValue(validatedToken));
             if (cnf.TryGetValue(JwtHeaderParameterNames.Jwk, StringComparison.Ordinal, out var jwk))
             {

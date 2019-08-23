@@ -37,14 +37,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="validatedToken"></param>
-    /// <param name="popAuthenticatorValidationPolicy"></param>
-    /// <returns></returns>
-    public delegate SecurityKey PopKeyResolver(JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy);
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="kid"></param>
     /// <returns></returns>
     public delegate SecurityKey PopKeyIdentifier(string kid);
@@ -173,11 +165,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// Gets or sets a delegate that will be used to check if the authenticator is replayed.
         /// </summary>
         public AuthenticatorReplayValidator AuthenticatorReplayValidator { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public PopKeyResolver PopKeyResolver { get; set; }
 
         /// <summary>
         /// 
