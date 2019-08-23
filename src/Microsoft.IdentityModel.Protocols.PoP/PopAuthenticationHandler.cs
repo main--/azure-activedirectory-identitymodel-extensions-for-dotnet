@@ -32,6 +32,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -44,6 +45,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     {
         private readonly JsonWebTokenHandler _handler = new JsonWebTokenHandler();
         private readonly Uri _baseUriHelper = new Uri("http://localhost", UriKind.Absolute);
+        private readonly HttpClient _defaultHttpClient = new HttpClient();
+
 
         // All hashes SHALL be calculated using the SHA256 algorithm.
         // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
@@ -498,13 +501,24 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw new PopProtocolException("TODO");
 
             if (cnf.TryGetValue(JwtHeaderParameterNames.Jwk, StringComparison.Ordinal, out var jwk))
+            {
                 return ResolvePopKeyFromJwk(jwk.ToString());
+            }
             else if (cnf.TryGetValue(PopConstants.ClaimTypes.Jwe, StringComparison.Ordinal, out var jwe))
+            {
                 return ResolvePopKeyFromJwe(jwe.ToString(), popAuthenticatorValidationPolicy);
+            }
             else if (cnf.TryGetValue(JwtHeaderParameterNames.Jku, StringComparison.Ordinal, out var jku))
-                return ResolvePopKeyFromJku(jku.ToString(), popAuthenticatorValidationPolicy);
+            {
+                if (cnf.TryGetValue(JwtHeaderParameterNames.Kid, StringComparison.Ordinal, out var kid))
+                    return ResolvePopKeyFromJku(jku.ToString(), kid.ToString(), popAuthenticatorValidationPolicy);
+                else
+                    return ResolvePopKeyFromJku(jku.ToString(), popAuthenticatorValidationPolicy);
+            }
             else if (cnf.TryGetValue(JwtHeaderParameterNames.Kid, StringComparison.Ordinal, out var kid))
+            {
                 return ResolvePopKeyFromKid(kid.ToString(), popAuthenticatorValidationPolicy);
+            }
             else
                 throw new PopProtocolException("TODO");
         }
@@ -553,10 +567,62 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         protected virtual SecurityKey ResolvePopKeyFromJku(string jku, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
-            // get kid
-            // allow custom httpclient
-            // utilize jsonwebkeyset
-            throw new PopProtocolException("TODO");
+            var popKeys = GetPopKeys(jku);
+            var popKeyCount = popKeys.Count;
+
+            if (popKeyCount == 0)
+                throw new PopProtocolException("TODO");
+            else if (popKeyCount > 1)
+                throw new PopProtocolException("TODO");
+            else
+                return popKeys[0];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jku"></param>
+        /// <param name="kid"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <returns></returns>
+        protected virtual SecurityKey ResolvePopKeyFromJku(string jku, string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        {
+            var popKeys = GetPopKeys(jku);
+            foreach (var key in popKeys)
+            {
+                if (string.Equals(key.KeyId, kid.ToString(), StringComparison.Ordinal))
+                    return key;
+            }
+
+            throw new PopProtocolException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jkuSetUrl"></param>
+        /// <returns></returns>
+        protected virtual IList<SecurityKey> GetPopKeys(string jkuSetUrl)
+        {
+            try
+            {
+                // ensure TLS and allow user-set HttpClient
+
+                // The protocol used to acquire the resource MUST provide integrity
+                // protection.An HTTP GET request to retrieve the JWK Set MUST use TLS
+                // [RFC5246] and the identity of the server MUST be validated, as per Section 6 of RFC 6125[RFC6125].
+
+                //var httpClient = HttpClient ?? _defaultHttpClient;
+                var httpClient = _defaultHttpClient;
+                var response = httpClient.GetAsync(jkuSetUrl).ConfigureAwait(false).GetAwaiter().GetResult();
+                var jsonWebKey = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                var jsonWebKeySet = new JsonWebKeySet(jsonWebKey);
+                return jsonWebKeySet.GetSigningKeys();
+            }
+            catch
+            {
+                throw new PopProtocolException();
+            }
         }
 
         /// <summary>
