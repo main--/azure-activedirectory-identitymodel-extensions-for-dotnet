@@ -35,12 +35,29 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// </summary>
     internal static class LogMessages
     {
-        public const string IDX23000 = "IDX23000: CryptoProviderFactory.CreateForVerifying returned null for key: '{0}', signatureAlgorithm: '{1}'.";
+        public const string IDX23000 = "IDX23000: CryptoProviderFactory returned null for key: '{0}', signatureAlgorithm: '{1}'.";
         public const string IDX23001 = "IDX23001: HttpRequestUri must be absolute when creating or validating the 'u' claim. HttpRequestUri: '{0}'.";
         public const string IDX23002 = "IDX23002: The HTTP Method must be uppercase HTTP verb. HttpMethod: '{0}'.";
-        public const string IDX23003 = "IDX23003: The authenticator does not contain the 'at' claim. This claim is required to validate the authenticator.";
+        public const string IDX23003 = "IDX23003: The authenticator does not contain the '{0}' claim. This claim is required to validate the authenticator.";
         public const string IDX23004 = "IDX23004: The following query parameters will not be included in the Q claim as they are repeated: '{0}'.";
         public const string IDX23005 = "IDX23005: The following headers will not be included in the H claim as they are repeated: '{0}'.";
         public const string IDX23006 = "IDX23006: The address specified '{0}' is not valid as per HTTPS scheme. Please specify an https address for security reasons. For testing with an http address, set the RequireHttpsForJkuResourceRetrieval property on PopAuthenticatorValidationPolicy to false.";
+        public const string IDX23007 = "IDX23007: HttpRequestUri is an invalid relative URI: '{0}'.";
+        public const string IDX23008 = "IDX23008: Exception caught while creating the '{0}' claim. Inner exception: '{1}'.";
+        public const string IDX23009 = "IDX23009: Pop authenticator signature validation failed.";
+        public const string IDX23010 = "IDX23010: Lifetime validation of the pop authenticator failed. Current time: '{0}', Authenticator valid to: {'1'}.";
+        public const string IDX23011 = "IDX23011: The '{0}' claim validation failed. Expected value: '{1}', value found: '{2}'.";
+        public const string IDX23012 = "IDX23012: The '{0}' claim validation failed. Expected values: '{0}' or '{1}', value found: '{2}'.";
+        public const string IDX23013 = "IDX23013: The 'at' token validation failed. Inner exception: '{0}'.";
+        public const string IDX23014 = "IDX23014: Unable to resolve a PoP key. The 'cnf' object must have one of the following claims: 'jwk', 'jwe', 'jku', 'kid'.";
+        public const string IDX23015 = "IDX23015: A security key resolved from the 'jwk' claim is not an asymmetric key. Resolved key type: '{0}'.";
+        public const string IDX23016 = "IDX23016: Unable to convert a key found in the 'jwk' claim to a security key. KeyId: '{0}'.";
+        public const string IDX23017 = "IDX23017: No decryption keys found. Unable to decrypt a key found in the 'jwe' claim without decryption keys.";
+        public const string IDX23018 = "IDX23018: Unable to decrypt a 'jwe' claim. Decryption keys used: '{0}'. Inner exception: '{1}'.";
+        public const string IDX23019 = "IDX23019: A security key resolved from the 'jwe' claim is not a symmetric key. Resolved key type: '{0}'.";
+        public const string IDX23020 = "IDX23020: Only one pop key should be resolved using the 'jku' claim. Number of resolved keys: '{0}'.";
+        public const string IDX23021 = "IDX23021: Unable to resolve a pop key from the 'jku' claim. Unable to match kid '{0}' against '{1}'.";
+        public const string IDX23022 = "IDX23022: Exception caught while retrieving a jwk set from: '{0}'. Inner exception: '{1}'. ";
+        public const string IDX23023 = "IDX23023: To resolve a security key using only the 'kid' claim, set the PopKeyIdentifier delegate on PopAuthenticatorValidationPolicy.";
     }
 }

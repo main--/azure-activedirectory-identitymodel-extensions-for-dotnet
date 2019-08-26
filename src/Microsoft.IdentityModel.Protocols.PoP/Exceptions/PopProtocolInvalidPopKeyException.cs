@@ -31,30 +31,30 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// </summary>
-    public class PopProtocolInvalidPopKeyClaimException : PopProtocolValidationException
+    public class PopProtocolInvalidPopKeyException : PopProtocolValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyException"/> class.
         /// </summary>
-        public PopProtocolInvalidPopKeyClaimException()
+        public PopProtocolInvalidPopKeyException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopProtocolInvalidPopKeyClaimException(string message)
+        public PopProtocolInvalidPopKeyException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopProtocolInvalidPopKeyException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopProtocolInvalidPopKeyClaimException(string message, Exception innerException)
+        public PopProtocolInvalidPopKeyException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
