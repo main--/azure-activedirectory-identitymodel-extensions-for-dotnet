@@ -25,6 +25,9 @@
 //
 //------------------------------------------------------------------------------
 
+using Microsoft.IdentityModel.Logging;
+using System;
+
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
@@ -36,6 +39,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         ///
         /// </summary>
         public PopAuthenticatorVersion PopAuthenticatorVersion { get; set; } = PopAuthenticatorVersion.Default;
+
+        /// <summary>
+        /// </summary>
+        public static readonly TimeSpan DefaultClockSkew = TimeSpan.Zero;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public TimeSpan ClockSkew { get; set; } = DefaultClockSkew;
 
         /// <summary>
         /// 

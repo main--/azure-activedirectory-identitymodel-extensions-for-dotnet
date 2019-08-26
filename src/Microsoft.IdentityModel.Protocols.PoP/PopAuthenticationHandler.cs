@@ -108,7 +108,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             AddAtClaim(payload, tokenWithCnfClaim);
 
             if (popAuthenticatorCreationPolicy.CreateTs)
-                AddTsClaim(payload);
+                AddTsClaim(payload, popAuthenticatorCreationPolicy);
 
             if (popAuthenticatorCreationPolicy.CreateM)
                 AddMClaim(payload, httpRequestData?.HttpMethod);
@@ -187,12 +187,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         /// <param name="payload"></param>
-        protected virtual void AddTsClaim(Dictionary<string, object> payload)
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        protected virtual void AddTsClaim(Dictionary<string, object> payload, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
 
-            payload.Add(PopConstants.ClaimTypes.Ts, (long)(DateTime.UtcNow - EpochTime.UnixEpoch).TotalSeconds);
+            if (popAuthenticatorCreationPolicy == null)
+                throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorCreationPolicy));
+
+            var authenticatorCreationTime = DateTime.UtcNow.Add(popAuthenticatorCreationPolicy.ClockSkew);
+            payload.Add(PopConstants.ClaimTypes.Ts, (long)(authenticatorCreationTime - EpochTime.UnixEpoch).TotalSeconds);
         }
 
         /// <summary>
@@ -538,7 +543,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             DateTime utcNow = DateTime.UtcNow;
             DateTime authenticatorCreationTime = EpochTime.DateTime(tsClaimValue);
-            DateTime authenticatorExpirationTime = authenticatorCreationTime.Add(popAuthenticatorValidationPolicy.AuthenticatorLifetime).Add(popAuthenticatorValidationPolicy.ClockSkew);
+            DateTime authenticatorExpirationTime = authenticatorCreationTime.Add(popAuthenticatorValidationPolicy.AuthenticatorLifetime);
 
             if (utcNow > authenticatorExpirationTime)
                 throw new PopProtocolException("TODO");

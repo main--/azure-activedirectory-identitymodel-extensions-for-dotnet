@@ -66,31 +66,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public PopAuthenticatorVersion PopAuthenticatorVersion { get; set; } = PopAuthenticatorVersion.Default;
 
         /// <summary>
-        /// </summary>
-        public static readonly TimeSpan DefaultClockSkew = TimeSpan.FromMinutes(1);
-
-        private TimeSpan _clockSkew = DefaultClockSkew;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public TimeSpan ClockSkew
-        {
-            get
-            {
-                return _clockSkew;
-            }
-
-            set
-            {
-                if (value < TimeSpan.Zero)
-                    throw LogHelper.LogExceptionMessage(new ArgumentOutOfRangeException(nameof(value)));
-
-                _clockSkew = value;
-            }
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         public static readonly TimeSpan DefaultAuthenticatorLifetime = TimeSpan.FromMinutes(5);
