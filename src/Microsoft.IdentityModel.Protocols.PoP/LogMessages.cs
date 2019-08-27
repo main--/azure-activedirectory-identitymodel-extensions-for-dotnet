@@ -57,7 +57,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23019 = "IDX23019: A security key resolved from the 'jwe' claim is not a symmetric key. Resolved key type: '{0}'.";
         public const string IDX23020 = "IDX23020: Only one pop key should be resolved using the 'jku' claim. Number of resolved keys: '{0}'.";
         public const string IDX23021 = "IDX23021: Unable to resolve a pop key from the 'jku' claim. Unable to match kid '{0}' against '{1}'.";
-        public const string IDX23022 = "IDX23022: Exception caught while retrieving a jwk set from: '{0}'. Inner exception: '{1}'. ";
+        public const string IDX23022 = "IDX23022: Exception caught while retrieving a jwk set from: '{0}'. Inner exception: '{1}'.";
         public const string IDX23023 = "IDX23023: To resolve a security key using only the 'kid' claim, set the PopKeyIdentifier delegate on PopAuthenticatorValidationPolicy.";
+        public const string IDX23024 = "IDX23024: Unable to parse the '{0}' claim: '{1}'. Inner exception: '{2}'.";
+        public const string IDX23025 = "IDX23025: Exception caught while validation the '{0}' claim. Inner exception: '{1}'.";
+        public const string IDX23026 = "IDX23026: The request contains uncovered headers and PopAuthenticatorValidationPolicy.AcceptUncoveredHeaders is set to 'false'. Uncovered headers: '{0}'.";
+        public const string IDX23027 = "IDX23027: Header: '{0}' is not found in the request headers: '{1}'. Unable to validate the 'h' claim.";
+        public const string IDX23028 = "IDX23028: Query parameter: '{0}' is not found in the request query parameters: '{1}'. Unable to validate the 'q' claim.";
+        public const string IDX23029 = "IDX23029: The request contains uncovered query parameters and PopAuthenticatorValidationPolicy.AcceptUncoveredQueryParameters is set to 'false'. Uncovered query parameters: '{0}'.";
     }
 }

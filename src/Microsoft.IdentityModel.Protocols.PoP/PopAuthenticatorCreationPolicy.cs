@@ -25,7 +25,6 @@
 //
 //------------------------------------------------------------------------------
 
-using Microsoft.IdentityModel.Logging;
 using System;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
