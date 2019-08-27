@@ -99,17 +99,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.M"/> claim should be validated or not.
         /// </summary>
-        public bool ValidateM { get; set; } = false;
+        public bool ValidateM { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.U"/> claim should be validated or not.
         /// </summary>
-        public bool ValidateU { get; set; } = false;
+        public bool ValidateU { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.P"/> claim should be validated or not.
         /// </summary>
-        public bool ValidateP { get; set; } = false;
+        public bool ValidateP { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.Q"/> claim should be validated or not.

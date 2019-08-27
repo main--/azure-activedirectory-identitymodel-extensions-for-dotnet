@@ -61,17 +61,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.M"/> claim should be created or not.
         /// </summary>
-        public bool CreateM { get; set; } = false;
+        public bool CreateM { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.U"/> claim should be created or not.
         /// </summary>
-        public bool CreateU { get; set; } = false;
+        public bool CreateU { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.P"/> claim should be created or not.
         /// </summary>
-        public bool CreateP { get; set; } = false;
+        public bool CreateP { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.Q"/> claim should be created or not.
