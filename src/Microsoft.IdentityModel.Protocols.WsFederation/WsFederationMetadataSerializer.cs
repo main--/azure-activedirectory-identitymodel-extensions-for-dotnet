@@ -30,6 +30,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.WsAddressing;
 using Microsoft.IdentityModel.Xml;
 using static Microsoft.IdentityModel.Logging.LogHelper;
 using static Microsoft.IdentityModel.Protocols.WsFederation.WsFederationConstants;
@@ -235,21 +236,21 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
             reader.ReadStartElement();
             reader.MoveToContent();
 
-            XmlUtil.CheckReaderOnEntry(reader, WsAddressing.Elements.EndpointReference, WsAddressing.Namespace);
+            XmlUtil.CheckReaderOnEntry(reader, WsAddressingConstants.Elements.EndpointReference, WsAddressing10Constants.Namespace);
             if (reader.IsEmptyElement)
-                throw XmlUtil.LogReadException(LogMessages.IDX22812, WsAddressing.Elements.EndpointReference);
+                throw XmlUtil.LogReadException(LogMessages.IDX22812, WsAddressingConstants.Elements.EndpointReference);
 
-            reader.ReadStartElement(WsAddressing.Elements.EndpointReference, WsAddressing.Namespace);
+            reader.ReadStartElement(WsAddressingConstants.Elements.EndpointReference, WsAddressing10Constants.Namespace);
             reader.MoveToContent();
        
             if (reader.IsEmptyElement)
                 throw XmlUtil.LogReadException(LogMessages.IDX22803);
 
-            XmlUtil.CheckReaderOnEntry(reader, WsAddressing.Elements.Address, WsAddressing.Namespace);
+            XmlUtil.CheckReaderOnEntry(reader, WsAddressingConstants.Elements.Address, WsAddressing10Constants.Namespace);
             if (reader.IsEmptyElement)
-                throw XmlUtil.LogReadException(LogMessages.IDX22812, WsAddressing.Elements.Address);
+                throw XmlUtil.LogReadException(LogMessages.IDX22812, WsAddressingConstants.Elements.Address);
 
-            reader.ReadStartElement(WsAddressing.Elements.Address, WsAddressing.Namespace);
+            reader.ReadStartElement(WsAddressingConstants.Elements.Address, WsAddressing10Constants.Namespace);
             reader.MoveToContent();
 
             var tokenEndpoint = Trim(reader.ReadContentAsString());
@@ -362,10 +363,10 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation
             writer.WriteStartElement(PreferredPrefix, Elements.PassiveRequestorEndpoint, Namespace);
 
             // <wsa:EndpointReference xmlns:wsa=""http://www.w3.org/2005/08/addressing"">
-            writer.WriteStartElement(WsAddressing.PreferredPrefix, WsAddressing.Elements.EndpointReference, WsAddressing.Namespace);
+            writer.WriteStartElement(WsAddressing10Constants.Prefix, WsAddressingConstants.Elements.EndpointReference, WsAddressing10Constants.Namespace);
 
             // <wsa:Address>
-            writer.WriteStartElement(WsAddressing.PreferredPrefix, WsAddressing.Elements.Address, WsAddressing.Namespace);
+            writer.WriteStartElement(WsAddressing10Constants.Prefix, WsAddressingConstants.Elements.Address, WsAddressing10Constants.Namespace);
 
             // write TokenEndpoint
             writer.WriteString(configuration.TokenEndpoint);

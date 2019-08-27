@@ -20,12 +20,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Wcf\AddressingVersion.cs" />
+    <Compile Remove="Wcf\MessageSecurityVersion.cs" />
+    <Compile Remove="Wcf\MessageVersion.cs" />
+    <Compile Remove="Wcf\TransportBindingElement.cs" />
+    <Compile Remove="Wcf\TransportDefaults.cs" />
+    <Compile Remove="Wcf\WsFederationHttpBinding.cs" />
+    <Compile Remove="Wcf\WsFederationHttpSecurity.cs" />
+    <Compile Remove="Wcf\WsFederationHttpSecurityMode.cs" />
+    <Compile Remove="Wcf\WsHttpBinding.cs" />
+    <Compile Remove="Wcf\WsHttpBindingBase.cs" />
+    <Compile Remove="WsSecurityPolicy\WSSecurityPolicy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.IdentityModel.Tokens\Microsoft.IdentityModel.Tokens.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' Or  '$(TargetFramework)' == 'net451' Or  '$(TargetFramework)' == 'net461'">
     <Reference Include="System.Net.Http" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="WsSecurityPolicy\" />
   </ItemGroup>
 
 </Project>

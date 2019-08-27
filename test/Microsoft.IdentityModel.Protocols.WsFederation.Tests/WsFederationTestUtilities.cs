@@ -31,6 +31,9 @@ using System.Text;
 using System.Xml;
 using Microsoft.IdentityModel.TestUtils;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.WsAddressing;
+using Microsoft.IdentityModel.WsPolicy;
+using Microsoft.IdentityModel.WsUtility;
 using Microsoft.IdentityModel.Xml;
 
 namespace Microsoft.IdentityModel.Protocols.WsFederation.Tests
@@ -49,18 +52,18 @@ namespace Microsoft.IdentityModel.Protocols.WsFederation.Tests
                     // <Lifetime>
                     writer.WriteStartElement(WsTrustConstants_1_3.PreferredPrefix, WsTrustConstants.Elements.Lifetime, WsTrustConstants.Namespaces.WsTrust1_3);
 
-                    writer.WriteElementString(WsUtility.PreferredPrefix, WsUtility.Elements.Created, WsUtility.Namespace, Default.IssueInstantString);
-                    writer.WriteElementString(WsUtility.PreferredPrefix, WsUtility.Elements.Expires, WsUtility.Namespace, Default.ExpiresString);
+                    writer.WriteElementString(WsUtilityConstants.Prefix, WsUtilityConstants.Elements.Created, WsUtilityConstants.Namespace, Default.IssueInstantString);
+                    writer.WriteElementString(WsUtilityConstants.Prefix, WsUtilityConstants.Elements.Expires, WsUtilityConstants.Namespace, Default.ExpiresString);
 
                     // </Lifetime>
                     writer.WriteEndElement();
 
                     // <AppliesTo>
-                    writer.WriteStartElement(WsPolicy.PreferredPrefix, WsPolicy.Elements.AppliesTo, WsPolicy.Namespace);
+                    writer.WriteStartElement(WsPolicy12Constants.Prefix, WsPolicy12Constants.Elements.AppliesTo, WsPolicy12Constants.Namespace);
 
                     // <EndpointReference>
-                    writer.WriteStartElement(WsAddressing.PreferredPrefix, WsAddressing.Elements.EndpointReference, WsAddressing.Namespace);
-                    writer.WriteElementString(WsAddressing.PreferredPrefix, WsAddressing.Elements.Address, WsAddressing.Namespace, Default.Audience);
+                    writer.WriteStartElement(WsAddressing10Constants.Prefix, WsAddressingConstants.Elements.EndpointReference, WsAddressing10Constants.Namespace);
+                    writer.WriteElementString(WsAddressing10Constants.Prefix, WsAddressingConstants.Elements.Address, WsAddressing10Constants.Namespace, Default.Audience);
 
                     // </EndpointReference>
                     writer.WriteEndElement();
