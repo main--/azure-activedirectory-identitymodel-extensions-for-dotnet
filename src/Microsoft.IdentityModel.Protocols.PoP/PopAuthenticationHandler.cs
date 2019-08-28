@@ -629,6 +629,12 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.Q, out JArray qClaim))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.Q)));
 
+            if (!httpRequestUri.IsAbsoluteUri)
+            {
+                if (!Uri.TryCreate(_baseUriHelper, httpRequestUri, out httpRequestUri))
+                    throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23007, httpRequestUri.ToString())));
+            }
+
             // eliminate duplicate query params.
             // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
             // If a header or query parameter is repeated on either the outgoing request from the client or the
