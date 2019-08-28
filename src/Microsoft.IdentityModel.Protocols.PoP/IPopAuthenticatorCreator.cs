@@ -26,6 +26,8 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.Tokens;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -41,7 +43,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="signingCredentials"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy);
+        Task<string> CreatePopAuthenticatorAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy, CancellationToken cancellationToken);
     }
 }

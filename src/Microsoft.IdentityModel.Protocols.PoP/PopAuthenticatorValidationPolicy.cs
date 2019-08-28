@@ -31,6 +31,8 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -38,22 +40,25 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// 
     /// </summary>
     /// <param name="kid"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public delegate SecurityKey PopKeyIdentifier(string kid);
+    public delegate Task<SecurityKey> PopKeyIdentifierAsync(string kid, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="jwtAuthenticator"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public delegate void AuthenticatorReplayValidator(JsonWebToken jwtAuthenticator);
+    public delegate Task AuthenticatorReplayValidatorAsync(JsonWebToken jwtAuthenticator, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="jwe"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public delegate IEnumerable<SecurityKey> CnfDecryptionKeysResolver(JsonWebToken jwe);
+    public delegate Task<IEnumerable<SecurityKey>> CnfDecryptionKeysResolverAsync(JsonWebToken jwe, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
@@ -139,17 +144,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// Gets or sets a delegate that will be used to check if the authenticator is replayed.
         /// </summary>
-        public AuthenticatorReplayValidator AuthenticatorReplayValidator { get; set; }
+        public AuthenticatorReplayValidatorAsync AuthenticatorReplayValidatorAsync { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public PopKeyIdentifier PopKeyIdentifier { get; set; }
+        public PopKeyIdentifierAsync PopKeyIdentifierAsync { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public CnfDecryptionKeysResolver CnfDecryptionKeysResolver { get; set; }
+        public CnfDecryptionKeysResolverAsync CnfDecryptionKeysResolverAsync { get; set; }
 
         /// <summary>
         /// 

@@ -35,6 +35,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -60,12 +62,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="signingCredentials"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
+        public virtual Task<string> CreatePopAuthenticatorAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy, CancellationToken cancellationToken)
         {
             var header = CreatePopAuthenticatorHeader(signingCredentials);
             var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, httpRequestData, popAuthenticatorCreationPolicy);
-            return SignPopAuthenticator(header, payload, signingCredentials);
+            return SignPopAuthenticatorAsync(header, payload, signingCredentials, cancellationToken);
         }
 
         /// <summary>
@@ -99,7 +102,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
         /// <returns></returns>
-
         protected virtual string CreatePopAuthenticatorPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (popAuthenticatorCreationPolicy == null)
@@ -142,8 +144,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="signingCredentials"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual string SignPopAuthenticator(string header, string payload, SigningCredentials signingCredentials)
+        protected virtual Task<string> SignPopAuthenticatorAsync(string header, string payload, SigningCredentials signingCredentials, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(header))
                 throw LogHelper.LogArgumentNullException(nameof(header));
@@ -161,7 +164,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             try
             {
                 var message = Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(header)) + "." + Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(payload));
-                return message + "." + Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(message)));
+                var signedMessage = message + "." + Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(message)));
+                return Task.FromResult(signedMessage);
             }
             finally
             {
@@ -416,8 +420,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="tokenValidationParameters"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        public virtual async Task<PopAuthenticatorValidationResult> ValidatePopAuthenticatorAsync(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(authenticator))
                 throw LogHelper.LogArgumentNullException(nameof(authenticator));
@@ -427,8 +432,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.At)));
             }
-            var validatedToken = ValidateToken(accessToken, tokenValidationParameters) as JsonWebToken;
-            ValidateAuthenticator(jwtAuthenticator, validatedToken, httpRequestData, popAuthenticatorValidationPolicy);
+            var validatedToken = await ValidateTokenAsync(accessToken, tokenValidationParameters, cancellationToken).ConfigureAwait(false) as JsonWebToken;
+            await ValidateAuthenticatorAsync(jwtAuthenticator, validatedToken, httpRequestData, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
 
             return new PopAuthenticatorValidationResult()
             {
@@ -445,8 +450,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="validatedToken"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual void ValidateAuthenticator(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task ValidateAuthenticatorAsync(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (jwtAuthenticator == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtAuthenticator));
@@ -454,9 +460,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorValidationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
-            popAuthenticatorValidationPolicy.AuthenticatorReplayValidator?.Invoke(jwtAuthenticator);
+            if (popAuthenticatorValidationPolicy.AuthenticatorReplayValidatorAsync != null)
+                await popAuthenticatorValidationPolicy.AuthenticatorReplayValidatorAsync(jwtAuthenticator, cancellationToken).ConfigureAwait(false);
 
-            ValidateAuthenticatorSignature(jwtAuthenticator, validatedToken, popAuthenticatorValidationPolicy);
+            await ValidateAuthenticatorSignatureAsync(jwtAuthenticator, validatedToken, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
 
             if (popAuthenticatorValidationPolicy.ValidateTs)
                 ValidateTsClaim(jwtAuthenticator, popAuthenticatorValidationPolicy);
@@ -486,12 +493,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="jwtAuthenticator"></param>
         /// <param name="validatedToken"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
-        protected virtual void ValidateAuthenticatorSignature(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        /// <param name="cancellationToken"></param>
+        protected virtual async Task ValidateAuthenticatorSignatureAsync(JsonWebToken jwtAuthenticator, JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (jwtAuthenticator == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtAuthenticator));
 
-            var popKey = ResolvePopKey(validatedToken, popAuthenticatorValidationPolicy);
+            var popKey = await ResolvePopKeyAsync(validatedToken, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
             var signatureProvider = popKey.CryptoProviderFactory.CreateForVerifying(popKey, jwtAuthenticator.Alg);
             if (signatureProvider == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidSignatureException(LogHelper.FormatInvariant(LogMessages.IDX23000, popKey?.ToString() ?? "Null", jwtAuthenticator.Alg ?? "Null")));
@@ -810,8 +818,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="accessToken"></param>
         /// <param name="tokenValidationParameters"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityToken ValidateToken(string accessToken, TokenValidationParameters tokenValidationParameters)
+        protected virtual Task<SecurityToken> ValidateTokenAsync(string accessToken, TokenValidationParameters tokenValidationParameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw LogHelper.LogArgumentNullException(nameof(accessToken));
@@ -826,7 +835,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23013, tokenValidationResult.Exception), tokenValidationResult.Exception));
             }
 
-            return tokenValidationResult.SecurityToken;
+            return Task.FromResult(tokenValidationResult.SecurityToken);
         }
         #endregion
 
@@ -836,8 +845,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="validatedToken"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKey(JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<SecurityKey> ResolvePopKeyAsync(JsonWebToken validatedToken, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (validatedToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(validatedToken));
@@ -849,18 +859,18 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             }
             else if (cnf.TryGetValue(PopConstants.ClaimTypes.Jwe, StringComparison.Ordinal, out var jwe))
             {
-                return ResolvePopKeyFromJwe(jwe.ToString(), popAuthenticatorValidationPolicy);
+                return await ResolvePopKeyFromJweAsync(jwe.ToString(), popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
             }
             else if (cnf.TryGetValue(JwtHeaderParameterNames.Jku, StringComparison.Ordinal, out var jku))
             {
                 if (cnf.TryGetValue(JwtHeaderParameterNames.Kid, StringComparison.Ordinal, out var kid))
-                    return ResolvePopKeyFromJku(jku.ToString(), kid.ToString(), popAuthenticatorValidationPolicy);
+                    return await ResolvePopKeyFromJkuAsync(jku.ToString(), kid.ToString(), popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
                 else
-                    return ResolvePopKeyFromJku(jku.ToString(), popAuthenticatorValidationPolicy);
+                    return await ResolvePopKeyFromJkuAsync(jku.ToString(), popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
             }
             else if (cnf.TryGetValue(JwtHeaderParameterNames.Kid, StringComparison.Ordinal, out var kid))
             {
-                return ResolvePopKeyFromKid(kid.ToString(), popAuthenticatorValidationPolicy);
+                return await ResolvePopKeyFromKidAsync(kid.ToString(), popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
             }
             else
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidCnfClaimException(LogHelper.FormatInvariant(LogMessages.IDX23014)));
@@ -910,8 +920,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="jwe"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKeyFromJwe(string jwe, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<SecurityKey> ResolvePopKeyFromJweAsync(string jwe, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(jwe))
                 throw LogHelper.LogArgumentNullException(nameof(jwe));
@@ -922,8 +933,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             var jsonWebToken = _handler.ReadJsonWebToken(jwe);
 
             IEnumerable<SecurityKey> decryptionKeys;
-            if (popAuthenticatorValidationPolicy.CnfDecryptionKeysResolver != null)
-                decryptionKeys = popAuthenticatorValidationPolicy.CnfDecryptionKeysResolver(jsonWebToken);
+            if (popAuthenticatorValidationPolicy.CnfDecryptionKeysResolverAsync != null)
+                decryptionKeys = await popAuthenticatorValidationPolicy.CnfDecryptionKeysResolverAsync(jsonWebToken, cancellationToken).ConfigureAwait(false);
             else
                 decryptionKeys = popAuthenticatorValidationPolicy.CnfDecryptionKeys;
 
@@ -962,10 +973,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="jku"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKeyFromJku(string jku, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<SecurityKey> ResolvePopKeyFromJkuAsync(string jku, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
-            var popKeys = GetPopKeys(jku, popAuthenticatorValidationPolicy);
+            var popKeys = await GetPopKeysFromJkuAsync(jku, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
             var popKeyCount = popKeys.Count;
 
             if (popKeyCount == 0)
@@ -982,13 +994,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="jku"></param>
         /// <param name="kid"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKeyFromJku(string jku, string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<SecurityKey> ResolvePopKeyFromJkuAsync(string jku, string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(kid))
                 throw LogHelper.LogArgumentNullException(nameof(kid));
 
-            var popKeys = GetPopKeys(jku, popAuthenticatorValidationPolicy);
+            var popKeys = await GetPopKeysFromJkuAsync(jku, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
+
             foreach (var key in popKeys)
             {
                 if (string.Equals(key.KeyId, kid.ToString(), StringComparison.Ordinal))
@@ -1003,8 +1017,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="jkuSetUrl"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual IList<SecurityKey> GetPopKeys(string jkuSetUrl, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<IList<SecurityKey>> GetPopKeysFromJkuAsync(string jkuSetUrl, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(jkuSetUrl))
                 throw LogHelper.LogArgumentNullException(nameof(jkuSetUrl));
@@ -1018,8 +1033,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             try
             {
                 var httpClient = popAuthenticatorValidationPolicy.HttpClientForJkuResourceRetrieval ?? _defaultHttpClient;
-                var response = httpClient.GetAsync(jkuSetUrl).ConfigureAwait(false).GetAwaiter().GetResult();
-                var jsonWebKey = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                var response = await httpClient.GetAsync(jkuSetUrl, cancellationToken).ConfigureAwait(false);
+                var jsonWebKey = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var jsonWebKeySet = new JsonWebKeySet(jsonWebKey);
                 return jsonWebKeySet.GetSigningKeys();
             }
@@ -1034,8 +1049,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="kid"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual SecurityKey ResolvePopKeyFromKid(string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual async Task<SecurityKey> ResolvePopKeyFromKidAsync(string kid, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(kid))
                 throw LogHelper.LogArgumentNullException(nameof(kid));
@@ -1043,8 +1059,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorValidationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
-            if (popAuthenticatorValidationPolicy.PopKeyIdentifier != null)
-                return popAuthenticatorValidationPolicy.PopKeyIdentifier(kid);
+            if (popAuthenticatorValidationPolicy.PopKeyIdentifierAsync != null)
+                return await popAuthenticatorValidationPolicy.PopKeyIdentifierAsync(kid, cancellationToken).ConfigureAwait(false);
             else
             {
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidPopKeyException(LogHelper.FormatInvariant(LogMessages.IDX23023)));

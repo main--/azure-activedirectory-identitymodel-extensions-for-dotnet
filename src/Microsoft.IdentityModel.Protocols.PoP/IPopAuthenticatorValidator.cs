@@ -26,6 +26,8 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.Tokens;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -41,7 +43,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="tokenValidationParameters"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        PopAuthenticatorValidationResult ValidatePopAuthenticator(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy);
+        Task<PopAuthenticatorValidationResult> ValidatePopAuthenticatorAsync(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken);
     }
 }
