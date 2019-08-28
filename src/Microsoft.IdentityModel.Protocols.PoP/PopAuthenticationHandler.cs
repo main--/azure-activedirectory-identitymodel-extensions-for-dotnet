@@ -52,6 +52,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
         private readonly HashAlgorithm _hash = SHA256.Create();
 
+        #region Pop authenticator creation
         /// <summary>
         /// 
         /// </summary>
@@ -405,7 +406,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             payload.Add(PopConstants.ClaimTypes.Nonce, Guid.NewGuid().ToString("N"));
         }
+        #endregion
 
+        #region Pop authenticator validation
         /// <summary>
         ///
         /// </summary>
@@ -819,6 +822,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             return tokenValidationResult.SecurityToken;
         }
+        #endregion
 
         #region Resolving PoP key
         /// <summary>
