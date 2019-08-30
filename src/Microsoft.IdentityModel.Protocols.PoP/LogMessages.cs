@@ -39,8 +39,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23001 = "IDX23001: HttpRequestUri must be absolute when creating or validating the 'u' claim. HttpRequestUri: '{0}'.";
         public const string IDX23002 = "IDX23002: The HTTP Method must be uppercase HTTP verb. HttpMethod: '{0}'.";
         public const string IDX23003 = "IDX23003: The authenticator does not contain the '{0}' claim. This claim is required to validate the authenticator.";
-        public const string IDX23004 = "IDX23004: The following query parameters will not be included in the Q claim as they are repeated: '{0}'.";
-        public const string IDX23005 = "IDX23005: The following headers will not be included in the H claim as they are repeated: '{0}'.";
+        public const string IDX23004 = "IDX23004: The following query parameters will not be included in the 'q' claim as they are repeated: '{0}'.";
+        public const string IDX23005 = "IDX23005: The following headers will not be included in the 'h' claim as they are repeated: '{0}'.";
         public const string IDX23006 = "IDX23006: The address specified '{0}' is not valid as per HTTPS scheme. Please specify an https address for security reasons. For testing with an http address, set the RequireHttpsForJkuResourceRetrieval property on PopAuthenticatorValidationPolicy to false.";
         public const string IDX23007 = "IDX23007: HttpRequestUri is an invalid relative URI: '{0}'.";
         public const string IDX23008 = "IDX23008: Exception caught while creating the '{0}' claim. Inner exception: '{1}'.";
@@ -65,5 +65,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23027 = "IDX23027: Header: '{0}' is not found in the request headers: '{1}'. Unable to validate the 'h' claim.";
         public const string IDX23028 = "IDX23028: Query parameter: '{0}' is not found in the request query parameters: '{1}'. Unable to validate the 'q' claim.";
         public const string IDX23029 = "IDX23029: The request contains uncovered query parameters and PopAuthenticatorValidationPolicy.AcceptUncoveredQueryParameters is set to 'false'. Uncovered query parameters: '{0}'.";
+        public const string IDX23030 = "IDX23030: Resolved pop key is null. Unable to validate an authenticator signature without a pop key.";
     }
 }

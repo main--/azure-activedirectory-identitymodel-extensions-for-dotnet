@@ -50,10 +50,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         private readonly HttpClient _defaultHttpClient = new HttpClient();
         private readonly string _newlineSeparator = "\n";
 
-        // All hashes SHALL be calculated using the SHA256 algorithm.
-        // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
-        private readonly HashAlgorithm _hash = SHA256.Create();
-
         #region Pop authenticator creation
         /// <summary>
         /// 
@@ -389,8 +385,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             try
             {
-                var hashedRequestBody = _hash.ComputeHash(httpRequestBody);
-                var base64UrlEncodedHash = Base64UrlEncoder.Encode(hashedRequestBody);
+                var base64UrlEncodedHash = CalculateBase64UrlEncodedHash(httpRequestBody);
                 payload.Add(PopConstants.ClaimTypes.B, base64UrlEncodedHash);
             }
             catch (Exception e)
@@ -500,6 +495,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(jwtAuthenticator));
 
             var popKey = await ResolvePopKeyAsync(validatedToken, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
+            if (popKey == null)
+                throw LogHelper.LogExceptionMessage(new PopProtocolInvalidSignatureException(LogHelper.FormatInvariant(LogMessages.IDX23030)));
+
             var signatureProvider = popKey.CryptoProviderFactory.CreateForVerifying(popKey, jwtAuthenticator.Alg);
             if (signatureProvider == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidSignatureException(LogHelper.FormatInvariant(LogMessages.IDX23000, popKey?.ToString() ?? "Null", jwtAuthenticator.Alg ?? "Null")));
@@ -558,7 +556,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.M, out string httpMethod))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidMClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.M)));
 
-            if (!string.Equals(expectedHttpMethod, httpMethod, StringComparison.Ordinal))
+            // "get " is functionally the same as "GET".
+            // different implementations might use differently formatted http verbs and we shouldn't fault.
+            httpMethod = httpMethod.Trim();
+            expectedHttpMethod = expectedHttpMethod.Trim();
+            if (!string.Equals(expectedHttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidMClaimException(LogHelper.FormatInvariant(LogMessages.IDX23011, PopConstants.ClaimTypes.M, expectedHttpMethod, httpMethod)));
         }
 
@@ -581,6 +583,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.U, out string uClaimValue))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidUClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.U)));
 
+            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3.2
+            // u: The HTTP URL host component as a JSON string.
+            // This MAY include the port separated from the host by a colon in host:port format.
             var expectedUClaimValue = httpRequestUri.Host;
             var expectedUClaimValueIncludingPort = $"{expectedUClaimValue}:{httpRequestUri.Port}";
 
@@ -801,8 +806,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             string expectedBase64UrlEncodedHash;
             try
             {
-                var hashedRequestBody = _hash.ComputeHash(httpRequestBody);
-                expectedBase64UrlEncodedHash = Base64UrlEncoder.Encode(hashedRequestBody);
+                expectedBase64UrlEncodedHash = CalculateBase64UrlEncodedHash(httpRequestBody);
             }
             catch (Exception e)
             {
@@ -1071,9 +1075,16 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         #region Private utility methods
         private string CalculateBase64UrlEncodedHash(string data)
         {
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-            var hashedBytes = _hash.ComputeHash(dataBytes);
-            return Base64UrlEncoder.Encode(hashedBytes);
+            return CalculateBase64UrlEncodedHash(Encoding.UTF8.GetBytes(data));
+        }
+
+        private string CalculateBase64UrlEncodedHash(byte[] bytes)
+        {
+            using (var hash = SHA256.Create())
+            {
+                var hashedBytes = hash.ComputeHash(bytes);
+                return Base64UrlEncoder.Encode(hashedBytes);
+            }
         }
 
         private List<KeyValuePair<string, string>> GetQueryParamsWithoutDuplicates(Uri httpRequestUri)
@@ -1093,6 +1104,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
         private void RemoveDuplicateHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
         {
+            // header names are processed in lowercase, hence OrdinalIgnoreCase.
+            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3.2
             var repeatedHeaders = headers.GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
             if (repeatedHeaders.Any())
             {
