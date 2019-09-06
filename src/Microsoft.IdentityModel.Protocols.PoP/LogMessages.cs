@@ -38,7 +38,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public const string IDX23000 = "IDX23000: CryptoProviderFactory returned null for key: '{0}', signatureAlgorithm: '{1}'.";
         public const string IDX23001 = "IDX23001: HttpRequestUri must be absolute when creating or validating the 'u' claim. HttpRequestUri: '{0}'.";
         public const string IDX23002 = "IDX23002: The HTTP Method must be uppercase HTTP verb. HttpMethod: '{0}'.";
-        public const string IDX23003 = "IDX23003: The authenticator does not contain the '{0}' claim. This claim is required to validate the authenticator.";
+        public const string IDX23003 = "IDX23003: The authenticator does not contain the '{0}' claim or claim value is null. This claim is required to validate the authenticator.";
         public const string IDX23004 = "IDX23004: The following query parameters will not be included in the 'q' claim as they are repeated: '{0}'.";
         public const string IDX23005 = "IDX23005: The following headers will not be included in the 'h' claim as they are repeated: '{0}'.";
         public const string IDX23006 = "IDX23006: The address specified '{0}' is not valid as per HTTPS scheme. Please specify an https address for security reasons. For testing with an http address, set the RequireHttpsForJkuResourceRetrieval property on PopAuthenticatorValidationPolicy to false.";

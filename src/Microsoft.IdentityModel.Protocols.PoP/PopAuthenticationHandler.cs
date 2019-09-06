@@ -429,7 +429,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(authenticator));
 
             var jwtAuthenticator = _handler.ReadJsonWebToken(authenticator);
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken) || accessToken == null)
             {
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.At)));
             }
@@ -559,7 +559,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (string.IsNullOrEmpty(expectedHttpMethod))
                 throw LogHelper.LogArgumentNullException(nameof(expectedHttpMethod));
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.M, out string httpMethod))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.M, out string httpMethod) || httpMethod == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidMClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.M)));
 
             // "get " is functionally the same as "GET".
@@ -586,7 +586,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!httpRequestUri.IsAbsoluteUri)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidUClaimException(LogHelper.FormatInvariant(LogMessages.IDX23001, httpRequestUri.ToString())));
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.U, out string uClaimValue))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.U, out string uClaimValue) || uClaimValue == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidUClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.U)));
 
             // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3.2
@@ -619,7 +619,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     throw LogHelper.LogExceptionMessage(new PopProtocolInvalidPClaimException(LogHelper.FormatInvariant(LogMessages.IDX23007, httpRequestUri.ToString())));
             }
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.P, out string pClaimValue))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.P, out string pClaimValue) || pClaimValue == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidPClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.P)));
 
             var expectedPClaimValue = httpRequestUri.AbsolutePath.TrimEnd('/');
@@ -645,7 +645,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorValidationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.Q, out JArray qClaim))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.Q, out JArray qClaim) || qClaim == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.Q)));
 
             if (!httpRequestUri.IsAbsoluteUri)
@@ -730,7 +730,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popAuthenticatorValidationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popAuthenticatorValidationPolicy));
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.H, out JArray hClaim))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.H, out JArray hClaim) || hClaim == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.H)));
 
             // eliminate duplicate headers.
@@ -806,7 +806,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (httpRequestBody == null || httpRequestBody.Count() == 0)
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestBody));
 
-            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.B, out string bClaim))
+            if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.B, out string bClaim) || bClaim == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidBClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.B)));
 
             string expectedBase64UrlEncodedHash;
@@ -896,7 +896,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (validatedToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(validatedToken));
 
-            if (validatedToken.TryGetPayloadValue(PopConstants.ClaimTypes.Cnf, out JObject cnf))
+            if (validatedToken.TryGetPayloadValue(PopConstants.ClaimTypes.Cnf, out JObject cnf) || cnf == null)
                 return cnf.ToString();
             else
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidCnfClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.Cnf)));
