@@ -62,7 +62,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         public virtual Task<string> CreatePopAuthenticatorAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy, CancellationToken cancellationToken)
         {
-            var header = CreatePopAuthenticatorHeader(signingCredentials);
+            var header = CreatePopAuthenticatorHeader(signingCredentials, popAuthenticatorCreationPolicy);
             var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, httpRequestData, popAuthenticatorCreationPolicy);
             return SignPopAuthenticatorAsync(header, payload, signingCredentials, cancellationToken);
         }
@@ -70,8 +70,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="signingCredentials"></param>
+        /// <param name="popAuthenticatorCreationPolicy"></param>
         /// <returns></returns>
-        protected virtual string CreatePopAuthenticatorHeader(SigningCredentials signingCredentials)
+        protected virtual string CreatePopAuthenticatorHeader(SigningCredentials signingCredentials, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (signingCredentials == null)
                 throw LogHelper.LogArgumentNullException(nameof(signingCredentials));
@@ -117,16 +119,16 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 AddUClaim(payload, httpRequestData?.HttpRequestUri);
 
             if (popAuthenticatorCreationPolicy.CreateP)
-                AddPClaim(payload, httpRequestData?.HttpRequestUri);
+                AddPClaim(payload, httpRequestData?.HttpRequestUri, popAuthenticatorCreationPolicy);
 
             if (popAuthenticatorCreationPolicy.CreateQ)
-                AddQClaim(payload, httpRequestData?.HttpRequestUri);
+                AddQClaim(payload, httpRequestData?.HttpRequestUri, popAuthenticatorCreationPolicy);
 
             if (popAuthenticatorCreationPolicy.CreateH)
-                AddHClaim(payload, httpRequestData?.HttpRequestHeaders);
+                AddHClaim(payload, httpRequestData?.HttpRequestHeaders, popAuthenticatorCreationPolicy);
 
             if (popAuthenticatorCreationPolicy.CreateB)
-                AddBClaim(payload, httpRequestData?.HttpRequestBody);
+                AddBClaim(payload, httpRequestData?.HttpRequestBody, popAuthenticatorCreationPolicy);
 
             if (popAuthenticatorCreationPolicy.CreateNonce)
                 AddNonceClaim(payload);
@@ -252,7 +254,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="httpRequestUri"></param>
-        protected virtual void AddPClaim(Dictionary<string, object> payload, Uri httpRequestUri)
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        protected virtual void AddPClaim(Dictionary<string, object> payload, Uri httpRequestUri, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
@@ -274,7 +277,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="httpRequestUri"></param>
-        protected virtual void AddQClaim(Dictionary<string, object> payload, Uri httpRequestUri)
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        protected virtual void AddQClaim(Dictionary<string, object> payload, Uri httpRequestUri, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
@@ -324,7 +328,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="httpRequestHeaders"></param>
-        protected virtual void AddHClaim(Dictionary<string, object> payload, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders)
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        protected virtual void AddHClaim(Dictionary<string, object> payload, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
@@ -375,7 +380,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="httpRequestBody"></param>
-        protected virtual void AddBClaim(Dictionary<string, object> payload, byte[] httpRequestBody)
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        protected virtual void AddBClaim(Dictionary<string, object> payload, byte[] httpRequestBody, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
