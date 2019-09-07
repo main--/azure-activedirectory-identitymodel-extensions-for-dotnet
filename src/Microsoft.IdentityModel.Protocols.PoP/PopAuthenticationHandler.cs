@@ -678,7 +678,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             try
             {
                 StringBuilder stringBuffer = new StringBuilder();
-                var lastQueryParam = qClaimQueryParamNames.Last();
+                var lastQueryParam = qClaimQueryParamNames.LastOrDefault();
                 foreach (var queryParamName in qClaimQueryParamNames)
                 {
                     if (!queryParamsDictionary.TryGetValue(queryParamName, out var queryParamsValue))
