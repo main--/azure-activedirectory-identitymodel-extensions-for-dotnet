@@ -33,7 +33,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     public static class PopConstants
     {
         /// <summary>
-        /// https://tools.ietf.org/html/rfc7800#section-3.1
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
         /// </summary>
         public const string PopAccessToken = "pop_access_token";
 
