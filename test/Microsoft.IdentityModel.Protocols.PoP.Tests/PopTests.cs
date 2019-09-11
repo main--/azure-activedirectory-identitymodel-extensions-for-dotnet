@@ -38,7 +38,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
         [Fact]
         public void MsalUsageSample()
         {
-            IPopAuthenticatorCreator popAuthenticatorCreator = new PopAuthenticationHandler();
+            PopAuthenticationHandler popAuthenticatorCreator = new PopAuthenticationHandler();
 
             string popToken = "{obtain a token that posses a PoP key}";
             var popPrivateKey = new RsaSecurityKey(new RSACryptoServiceProvider(2048)) { KeyId = Guid.NewGuid().ToString() }; // set a key which public parts are used to create a pop token.
@@ -50,10 +50,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
                 HttpMethod = "GET",
                 HttpRequestUri = new Uri("https://www.contoso.com:443/it/requests?b=bar&a=foo&c=duck"),
                 HttpRequestBody = Guid.NewGuid().ToByteArray(),
-                HttpRequestHeaders = new List<KeyValuePair<string, IEnumerable<string>>>
+                HttpRequestHeaders = new Dictionary<string, IEnumerable<string>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Content-Type", new List<string> { "application/json" }),
-                    new KeyValuePair<string, IEnumerable<string>>("Etag", new List<string> { "742-3u8f34-3r2nvv3" }),
+                    { "Content-Type", new List<string> { "application/json" } },
+                    { "Etag", new List<string> { "742-3u8f34-3r2nvv3" } },
                 }
             };
 
