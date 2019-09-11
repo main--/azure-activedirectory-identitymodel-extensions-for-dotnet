@@ -31,30 +31,30 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// </summary>
-    public class PopProtocolValidationException : PopProtocolException
+    public class PopInvalidSignatureException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolValidationException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidSignatureException"/> class.
         /// </summary>
-        public PopProtocolValidationException()
+        public PopInvalidSignatureException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolValidationException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidSignatureException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopProtocolValidationException(string message)
+        public PopInvalidSignatureException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolValidationException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidSignatureException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopProtocolValidationException(string message, Exception innerException)
+        public PopInvalidSignatureException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

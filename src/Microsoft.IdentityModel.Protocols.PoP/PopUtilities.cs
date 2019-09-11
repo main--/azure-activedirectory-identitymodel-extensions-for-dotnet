@@ -39,14 +39,14 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="authenticator"></param>
+        /// <param name="popToken"></param>
         /// <returns></returns>
-        public static string CreatePopHeader(string authenticator)
+        public static string CreatePopHeader(string popToken)
         {
-            if (string.IsNullOrEmpty(authenticator))
-                throw LogHelper.LogArgumentNullException(nameof(authenticator));
+            if (string.IsNullOrEmpty(popToken))
+                throw LogHelper.LogArgumentNullException(nameof(popToken));
 
-            return $"{PopConstants.Pop} {authenticator}";
+            return $"{PopConstants.Pop} {popToken}";
         }
 
         /// <summary>

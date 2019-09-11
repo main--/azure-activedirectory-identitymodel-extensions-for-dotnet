@@ -47,10 +47,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="jwtAuthenticator"></param>
+    /// <param name="jwtPopToken"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public delegate Task AuthenticatorReplayValidatorAsync(JsonWebToken jwtAuthenticator, CancellationToken cancellationToken);
+    public delegate Task PopTokenReplayValidatorAsync(JsonWebToken jwtPopToken, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
@@ -63,23 +63,23 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticatorValidationPolicy
+    public class PopTokenValidationPolicy
     {
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TimeSpan DefaultAuthenticatorLifetime = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan DefaultPopTokenLifetime = TimeSpan.FromMinutes(5);
 
-        private TimeSpan _authenticatorLifetime = DefaultAuthenticatorLifetime;
+        private TimeSpan _popTokenLifetime = DefaultPopTokenLifetime;
 
         /// <summary>
         /// 
         /// </summary>
-        public TimeSpan AuthenticatorLifetime
+        public TimeSpan PopTokenLifetime
         {
             get
             {
-                return _authenticatorLifetime;
+                return _popTokenLifetime;
             }
 
             set
@@ -87,7 +87,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 if (value < TimeSpan.Zero)
                     throw LogHelper.LogExceptionMessage(new ArgumentOutOfRangeException(nameof(value)));
 
-                _authenticatorLifetime = value;
+                _popTokenLifetime = value;
             }
         }
 
@@ -137,9 +137,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public bool AcceptUncoveredHeaders { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a delegate that will be used to check if the authenticator is replayed.
+        /// Gets or sets a delegate that will be used to check if the pop token is replayed.
         /// </summary>
-        public AuthenticatorReplayValidatorAsync AuthenticatorReplayValidatorAsync { get; set; }
+        public PopTokenReplayValidatorAsync PopTokenReplayValidatorAsync { get; set; }
 
         /// <summary>
         /// 

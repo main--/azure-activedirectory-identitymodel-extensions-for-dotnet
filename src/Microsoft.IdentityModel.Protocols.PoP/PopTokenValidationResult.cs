@@ -32,7 +32,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticatorValidationResult
+    public class PopTokenValidationResult
     {
         /// <summary>
         /// Gets or sets the AccessToken.
@@ -40,9 +40,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public string AccessToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the Proof-Of-Possession authenticator.
+        /// Gets or sets the PopToken.
         /// </summary>
-        public string Authenticator { get; set; }
+        public string PopToken { get; set; }
 
         /// <summary>
         /// Gets or sets the validated application token.

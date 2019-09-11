@@ -41,9 +41,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
         [Fact]
         public async void MsalUsageSample()
         {
-            PopAuthenticationHandler popAuthenticator = new PopAuthenticationHandler();
+            PopTokenHandler popHandler = new PopTokenHandler();
 
-            string popToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IlJzYVNlY3VyaXR5S2V5XzIwNDgiLCJ0eXAiOiJKV1QifQ.eyJhcHBpZCI6ImJiYmJiYmJiLWViZjUtNGI3MC04ZWIwLWZkMjYzMDNiNmE1ZiIsImFwcGlkYWNyIjoiMiIsImF1ZCI6IjkxOTE5NmY2LTM4ZmQtNDZmMy04Njg2LWE0OWUyOTQ0YjI3NyIsImV4cCI6MTU3Nzg2OTI2MSwiaWF0IjoxNDgzMjYxMjYxLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9hZGQyOTQ4OS03MjY5LTQxZjQtODg0MS1iNjNjOTU1NjQ0MjEvIiwibmJmIjoxNDgzMjYxMjYxLCJvaWQiOiJkMWFkOWNlNy1iMzIyLTQyMjEtYWI3NC0xZTEwMTFlMWJiY2IiLCJzdWIiOiJNQVM2Y05OallPVUtqRXpLbzViY3NsUHJ6LWhoMXNGUjR1RHlaNkxZQ1gwIiwidGlkIjoiYWRkMjk0ODktNzI2OS00MWY0LTg4NDEtYjYzYzk1NTY0NDIxIiwidmVyIjoiMS4wIiwiY25mIjp7Imp3ayI6eyJrdHkiOiJSU0EiLCJuIjoiNi1GckZrdF9UQnlRX0w1ZDdvci05UFZBb3dwc3d4VWUzZEplWUZUWTBMZ3E3ektJNU9RNVJuU3JJMFQ5eXJmblJ6RTlvT2RkNHptVmo5dHhWTEkteXlTdmluQXUzeVFEUW91MkdhNDJNTF8tSzRKcmQ1Y2xNVVBSR01iWGRWNVJsOXp6QjBzMkpvWkplZHVhNWR3b1F3MEdrUzVaOFlBWEJFelVMcnVwMDZmbkI1bjZ4NXIyeTFDXzhFYnA1Y3lFNEJqczdXNjhyVWx5SWx4MWx6WXZha3hTbmhVeFNzang3dV9tSWR5d3lHZmdpVDN0dzBGc1d2a2lfS1l1ckFQUjFCU01YaEN6elpUa01XS0U4SWFMa2hhdXc1TWR4b2p4eUJWdU5ZLUpfZWxxLUhnSl9kWks2Zzd2TU52WHoyX3ZULVN5a0lrendpRDllU0k5VVdmc2p3IiwiZSI6IkFRQUIiLCJhbGciOiJSUzI1NiIsImtpZCI6IlJzYVNlY3VyaXR5S2V5XzIwNDgifX19.HGPPwvlAzliPRSjXJ1T50y9P_LbytACfG1Jr-rqOQGerozjZ0ivFhhNUB_QMp5rMRMR854Dh7CkFUfvgJza3MKs7--a_FHJueack-6KueDGAtP_5fzUiqoGJB5Qnz0VsLrUCDyzub6hUm0d9R-gJ-mQs_7ybYQMuHDFzC_CG9zs8VpeEVcjOBzflg8ZKppQlfomRJ8v2rhkeZC7l3cjzN_pS1NH_8wOdhzFaC1csDEmq9Cndg5dRwm0IshIOGc6kYQfS2wUXGucfE6S0z3vExXjF1oxESR-G74R6zZFKksh9YBye1TU10CwKK_eeswqgUwH6bxHoX926ITscrX__HA";
+            string accessTokenWithCnfClaim = "eyJhbGciOiJSUzI1NiIsImtpZCI6IlJzYVNlY3VyaXR5S2V5XzIwNDgiLCJ0eXAiOiJKV1QifQ.eyJhcHBpZCI6ImJiYmJiYmJiLWViZjUtNGI3MC04ZWIwLWZkMjYzMDNiNmE1ZiIsImFwcGlkYWNyIjoiMiIsImF1ZCI6IjkxOTE5NmY2LTM4ZmQtNDZmMy04Njg2LWE0OWUyOTQ0YjI3NyIsImV4cCI6MTU3Nzg2OTI2MSwiaWF0IjoxNDgzMjYxMjYxLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9hZGQyOTQ4OS03MjY5LTQxZjQtODg0MS1iNjNjOTU1NjQ0MjEvIiwibmJmIjoxNDgzMjYxMjYxLCJvaWQiOiJkMWFkOWNlNy1iMzIyLTQyMjEtYWI3NC0xZTEwMTFlMWJiY2IiLCJzdWIiOiJNQVM2Y05OallPVUtqRXpLbzViY3NsUHJ6LWhoMXNGUjR1RHlaNkxZQ1gwIiwidGlkIjoiYWRkMjk0ODktNzI2OS00MWY0LTg4NDEtYjYzYzk1NTY0NDIxIiwidmVyIjoiMS4wIiwiY25mIjp7Imp3ayI6eyJrdHkiOiJSU0EiLCJuIjoiNi1GckZrdF9UQnlRX0w1ZDdvci05UFZBb3dwc3d4VWUzZEplWUZUWTBMZ3E3ektJNU9RNVJuU3JJMFQ5eXJmblJ6RTlvT2RkNHptVmo5dHhWTEkteXlTdmluQXUzeVFEUW91MkdhNDJNTF8tSzRKcmQ1Y2xNVVBSR01iWGRWNVJsOXp6QjBzMkpvWkplZHVhNWR3b1F3MEdrUzVaOFlBWEJFelVMcnVwMDZmbkI1bjZ4NXIyeTFDXzhFYnA1Y3lFNEJqczdXNjhyVWx5SWx4MWx6WXZha3hTbmhVeFNzang3dV9tSWR5d3lHZmdpVDN0dzBGc1d2a2lfS1l1ckFQUjFCU01YaEN6elpUa01XS0U4SWFMa2hhdXc1TWR4b2p4eUJWdU5ZLUpfZWxxLUhnSl9kWks2Zzd2TU52WHoyX3ZULVN5a0lrendpRDllU0k5VVdmc2p3IiwiZSI6IkFRQUIiLCJhbGciOiJSUzI1NiIsImtpZCI6IlJzYVNlY3VyaXR5S2V5XzIwNDgifX19.HGPPwvlAzliPRSjXJ1T50y9P_LbytACfG1Jr-rqOQGerozjZ0ivFhhNUB_QMp5rMRMR854Dh7CkFUfvgJza3MKs7--a_FHJueack-6KueDGAtP_5fzUiqoGJB5Qnz0VsLrUCDyzub6hUm0d9R-gJ-mQs_7ybYQMuHDFzC_CG9zs8VpeEVcjOBzflg8ZKppQlfomRJ8v2rhkeZC7l3cjzN_pS1NH_8wOdhzFaC1csDEmq9Cndg5dRwm0IshIOGc6kYQfS2wUXGucfE6S0z3vExXjF1oxESR-G74R6zZFKksh9YBye1TU10CwKK_eeswqgUwH6bxHoX926ITscrX__HA";
             var RsaParameters_2048 = new RSAParameters
             {
                 D = Base64UrlEncoder.DecodeBytes("C6EGZYf9U6RI5Z0BBoSlwy_gKumVqRx-dBMuAfPM6KVbwIUuSJKT3ExeL5P0Ky1b4p-j2S3u7Afnvrrj4HgVLnC1ks6rEOc2ne5DYQq8szST9FMutyulcsNUKLOM5cVromALPz3PAqE2OCLChTiQZ5XZ0AiH-KcG-3hKMa-g1MVnGW-SSmm27XQwRtUtFQFfxDuL0E0fyA9O9ZFBV5201ledBaLdDcPBF8cHC53Gm5G6FRX3QVpoewm3yGk28Wze_YvNl8U3hvbxei2Koc_b9wMbFxvHseLQrxvFg_2byE2em8FrxJstxgN7qhMsYcAyw1qGJY-cYX-Ab_1bBCpdcQ"),
@@ -83,8 +83,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
             };
             */
 
-            // adjust the PopAuthenticatorCreationPolicy
-            var popAuthenticatorCreationPolicy = new PopAuthenticatorCreationPolicy()
+            // adjust the PopTokenCreationPolicy
+            var popCreationPolicy = new PopTokenCreationPolicy()
             {
                 CreateTs = true,
                 CreateM = true,
@@ -95,8 +95,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
                 CreateQ = true,
             };
 
-            // adjust the PopAuthenticatorValidationPolicy
-            var popAuthenticatorValidationPolicy = new PopAuthenticatorValidationPolicy()
+            // adjust the PopTokenValidationPolicy
+            var popValidationPolicy = new PopTokenValidationPolicy()
             {
                 ValidateTs = true,
                 ValidateM = true,
@@ -116,13 +116,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
 
             try
             {
-                var authenticator = popAuthenticator.CreatePopAuthenticator(popToken, signingCredentials, httpRequestData, popAuthenticatorCreationPolicy);
-                var result = await popAuthenticator.ValidatePopAuthenticatorAsync(authenticator, httpRequestData, tokenValidationParameters, popAuthenticatorValidationPolicy, CancellationToken.None).ConfigureAwait(false);
+                var popToken = popHandler.CreatePopToken(accessTokenWithCnfClaim, signingCredentials, httpRequestData, popCreationPolicy);
+                var result = await popHandler.ValidatePopTokenAsync(popToken, httpRequestData, tokenValidationParameters, popValidationPolicy, CancellationToken.None).ConfigureAwait(false);
 
                 //4.1. 
-                var popHeader = PopUtilities.CreatePopHeader(result.Authenticator);
+                var popHeader = PopUtilities.CreatePopHeader(result.PopToken);
             }
-            catch (PopProtocolException e)
+            catch (PopException e)
             {
                 // handle the exception
                 throw e;

@@ -31,30 +31,30 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// </summary>
-    public class PopProtocolInvalidTsClaimException : PopProtocolValidationException
+    public class PopInvalidAtClaimException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidTsClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
         /// </summary>
-        public PopProtocolInvalidTsClaimException()
+        public PopInvalidAtClaimException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidTsClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopProtocolInvalidTsClaimException(string message)
+        public PopInvalidAtClaimException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidTsClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopProtocolInvalidTsClaimException(string message, Exception innerException)
+        public PopInvalidAtClaimException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

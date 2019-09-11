@@ -31,30 +31,30 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// </summary>
-    public class PopProtocolInvalidBClaimException : PopProtocolValidationException
+    public class PopCreationException : PopException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidBClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopCreationException"/> class.
         /// </summary>
-        public PopProtocolInvalidBClaimException()
+        public PopCreationException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidHClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopCreationException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopProtocolInvalidBClaimException(string message)
+        public PopCreationException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidBClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopCreationException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopProtocolInvalidBClaimException(string message, Exception innerException)
+        public PopCreationException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

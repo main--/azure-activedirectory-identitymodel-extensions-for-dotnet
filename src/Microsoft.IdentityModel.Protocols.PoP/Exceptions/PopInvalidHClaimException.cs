@@ -31,30 +31,30 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 {
     /// <summary>
     /// </summary>
-    public class PopProtocolInvalidSignatureException : PopProtocolValidationException
+    public class PopInvalidHClaimException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidSignatureException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
-        public PopProtocolInvalidSignatureException()
+        public PopInvalidHClaimException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidSignatureException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopProtocolInvalidSignatureException(string message)
+        public PopInvalidHClaimException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopProtocolInvalidSignatureException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopProtocolInvalidSignatureException(string message, Exception innerException)
+        public PopInvalidHClaimException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

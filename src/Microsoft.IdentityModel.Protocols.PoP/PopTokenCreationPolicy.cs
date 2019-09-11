@@ -32,7 +32,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticatorCreationPolicy
+    public class PopTokenCreationPolicy
     {
         /// <summary>
         /// </summary>
