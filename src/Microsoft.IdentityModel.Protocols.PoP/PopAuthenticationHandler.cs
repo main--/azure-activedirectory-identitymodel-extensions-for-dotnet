@@ -1131,13 +1131,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             return sanitizedQueryParams;
         }
 
-        private IDictionary<string, IEnumerable<string>> SanitizeHeaders(IDictionary<string, IEnumerable<string>> headers)
+        private IDictionary<string, string> SanitizeHeaders(IDictionary<string, IEnumerable<string>> headers)
         {
             // Remove repeated headers. https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5.
             // "If a header or query parameter is repeated on either the outgoing request from the client or the
             // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature."
             // Remove the authorization header (https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-4.1).
-            var sanitizedHeaders = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            var sanitizedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var repeatedHeaders = new List<string>();
             foreach (var header in headers)
             {
@@ -1159,7 +1159,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     repeatedHeaders.Add(headerName.ToLowerInvariant());
                 }
                 else
-                    sanitizedHeaders.Add(headerName, header.Value);
+                    sanitizedHeaders.Add(headerName, header.Value.First());
             }
 
             if (repeatedHeaders.Any())
