@@ -26,6 +26,8 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.Logging;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -46,5 +48,34 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             return $"{PopConstants.Pop} {authenticator}";
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="httpRequestMessage"></param>
+        /// <returns></returns>
+        public static async Task<HttpRequestData> ToHttpRequestDataAsync(this HttpRequestMessage httpRequestMessage)
+        {
+            if (httpRequestMessage == null)
+                throw LogHelper.LogArgumentNullException(nameof(httpRequestMessage));
+
+            var httpRequestData = new HttpRequestData()
+            {
+                HttpMethod = httpRequestMessage.Method?.ToString(),
+                HttpRequestUri = httpRequestMessage.RequestUri
+            };
+
+            httpRequestData.AppendHeaders(httpRequestMessage.Headers);
+
+            if (httpRequestMessage.Content != null)
+            {
+                httpRequestData.HttpRequestBody = await httpRequestMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                httpRequestData.AppendHeaders(httpRequestMessage.Content.Headers);
+            }
+
+            return httpRequestData;
+        }
+
+
     }
 }
