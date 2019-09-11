@@ -45,8 +45,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public string PopToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the validated application token.
+        /// Gets or sets the validated access token.
         /// </summary>
         public SecurityToken ValidatedAccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validated PopToken.
+        /// </summary>
+        public SecurityToken ValidatedPopToken { get; set; }
     }
 }

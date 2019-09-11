@@ -440,14 +440,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 throw LogHelper.LogExceptionMessage(new PopInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.At)));
             }
-            var validatedToken = await ValidateAccessTokenAsync(accessToken, tokenValidationParameters, cancellationToken).ConfigureAwait(false) as JsonWebToken;
-            await ValidatePopTokenAsync(jwtPopToken, validatedToken, httpRequestData, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
+            var validatedAccessToken = await ValidateAccessTokenAsync(accessToken, tokenValidationParameters, cancellationToken).ConfigureAwait(false) as JsonWebToken;
+            var validatedPopToken = await ValidatePopTokenAsync(jwtPopToken, validatedAccessToken, httpRequestData, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
 
             return new PopTokenValidationResult()
             {
-                AccessToken = validatedToken.EncodedToken,
-                PopToken = jwtPopToken.EncodedToken,
-                ValidatedAccessToken = validatedToken
+                AccessToken = accessToken,
+                PopToken = popToken,
+                ValidatedAccessToken = validatedAccessToken,
+                ValidatedPopToken = validatedPopToken
             };
         }
 
@@ -460,7 +461,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="popTokenValidationPolicy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual async Task ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
+        protected virtual async Task<JsonWebToken> ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
         {
             if (jwtPopToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtPopToken));
@@ -493,6 +494,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             if (popTokenValidationPolicy.ValidateB)
                 ValidateBClaim(jwtPopToken, httpRequestData?.HttpRequestBody, popTokenValidationPolicy);
+
+            return jwtPopToken;
         }
 
         /// <summary>
