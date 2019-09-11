@@ -39,6 +39,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="validatedToken"></param>
+    /// <param name="popTokenValidationPolicy"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public delegate Task<SecurityKey> PopKeyResolverAsync(JsonWebToken validatedToken, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="kid"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -115,6 +124,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 _popTokenLifetime = value;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PopKeyResolverAsync PopKeyResolverAsync { get; set; }
 
         /// <summary>
         /// 
