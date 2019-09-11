@@ -42,7 +42,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <param name="kid"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public delegate Task<SecurityKey> PopKeyIdentifierAsync(string kid, CancellationToken cancellationToken);
+    public delegate Task<SecurityKey> PopKeyResolverFromKeyIdentifierAsync(string kid, CancellationToken cancellationToken);
 
     /// <summary>
     /// 
@@ -65,12 +65,37 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// </summary>
     public class PopTokenValidationPolicy
     {
+        private TimeSpan _popTokenLifetime = DefaultPopTokenLifetime;
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.1
+        /// </summary>
+        public bool AcceptUncoveredQueryParameters { get; set; } = true;
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.2
+        /// </summary>
+        public bool AcceptUncoveredHeaders { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<SecurityKey> CnfDecryptionKeys { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public CnfDecryptionKeysResolverAsync CnfDecryptionKeysResolverAsync { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
         public static readonly TimeSpan DefaultPopTokenLifetime = TimeSpan.FromMinutes(5);
 
-        private TimeSpan _popTokenLifetime = DefaultPopTokenLifetime;
+        /// <summary>
+        /// 
+        /// </summary>
+        public HttpClient HttpClientForJkuResourceRetrieval { get; set; }
 
         /// <summary>
         /// 
@@ -90,6 +115,20 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 _popTokenLifetime = value;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PopKeyResolverFromKeyIdentifierAsync PopKeyResolverFromKeyIdentifierAsync { get; set; }
+
+        /// <summary>
+        /// Gets or sets a delegate that will be used to check if the pop token is replayed.
+        /// </summary>
+        public PopTokenReplayValidatorAsync PopTokenReplayValidatorAsync { get; set; }
+
+        /// <summary>
+        /// </summary>
+        public bool RequireHttpsForJkuResourceRetrieval { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.Ts"/> claim should be validated or not.
@@ -125,44 +164,5 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.B"/> claim should be validated or not.
         /// </summary>
         public bool ValidateB { get; set; } = false;
-
-        /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.1
-        /// </summary>
-        public bool AcceptUncoveredQueryParameters { get; set; } = true;
-
-        /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-5.2
-        /// </summary>
-        public bool AcceptUncoveredHeaders { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a delegate that will be used to check if the pop token is replayed.
-        /// </summary>
-        public PopTokenReplayValidatorAsync PopTokenReplayValidatorAsync { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public PopKeyIdentifierAsync PopKeyIdentifierAsync { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public CnfDecryptionKeysResolverAsync CnfDecryptionKeysResolverAsync { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public HttpClient HttpClientForJkuResourceRetrieval { get; set; }
-
-        /// <summary>
-        /// </summary>
-        public bool RequireHttpsForJkuResourceRetrieval { get; set; } = true;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IEnumerable<SecurityKey> CnfDecryptionKeys { get; set; }
     }
 }

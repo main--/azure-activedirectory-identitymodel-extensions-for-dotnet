@@ -1070,8 +1070,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popTokenValidationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popTokenValidationPolicy));
 
-            if (popTokenValidationPolicy.PopKeyIdentifierAsync != null)
-                return await popTokenValidationPolicy.PopKeyIdentifierAsync(kid, cancellationToken).ConfigureAwait(false);
+            if (popTokenValidationPolicy.PopKeyResolverFromKeyIdentifierAsync != null)
+                return await popTokenValidationPolicy.PopKeyResolverFromKeyIdentifierAsync(kid, cancellationToken).ConfigureAwait(false);
             else
             {
                 throw LogHelper.LogExceptionMessage(new PopInvalidPopKeyException(LogHelper.FormatInvariant(LogMessages.IDX23023)));
