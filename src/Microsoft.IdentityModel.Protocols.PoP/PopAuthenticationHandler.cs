@@ -58,13 +58,12 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="signingCredentials"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<string> CreatePopAuthenticatorAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy, CancellationToken cancellationToken)
+        public virtual string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             var header = CreatePopAuthenticatorHeader(signingCredentials, popAuthenticatorCreationPolicy);
             var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, httpRequestData, popAuthenticatorCreationPolicy);
-            return SignPopAuthenticatorAsync(header, payload, signingCredentials, cancellationToken);
+            return SignPopAuthenticator(header, payload, signingCredentials);
         }
 
         /// <summary>
@@ -142,9 +141,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="signingCredentials"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual Task<string> SignPopAuthenticatorAsync(string header, string payload, SigningCredentials signingCredentials, CancellationToken cancellationToken)
+        protected virtual string SignPopAuthenticator(string header, string payload, SigningCredentials signingCredentials)
         {
             if (string.IsNullOrEmpty(header))
                 throw LogHelper.LogArgumentNullException(nameof(header));
@@ -163,7 +161,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 var message = Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(header)) + "." + Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(payload));
                 var signedMessage = message + "." + Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes(message)));
-                return Task.FromResult(signedMessage);
+                return signedMessage;
             }
             finally
             {
