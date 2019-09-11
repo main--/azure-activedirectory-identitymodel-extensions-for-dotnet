@@ -292,18 +292,14 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     throw LogHelper.LogExceptionMessage(new PopProtocolCreationException(LogHelper.FormatInvariant(LogMessages.IDX23007, httpRequestUri.ToString())));
             }
 
-            // eliminate duplicate query params.
-            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
-            // If a header or query parameter is repeated on either the outgoing request from the client or the
-            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
-            var queryParams = GetQueryParamsWithoutDuplicates(httpRequestUri);
+            var sanitizedQueryParams = SanitizeQueryParams(httpRequestUri);
 
             StringBuilder stringBuffer = new StringBuilder();
             List<string> queryParamNameList = new List<string>();
             try
             {
-                var lastQueryParam = queryParams.Last();
-                foreach (var queryParam in queryParams)
+                var lastQueryParam = sanitizedQueryParams.Last();
+                foreach (var queryParam in sanitizedQueryParams)
                 {
                     queryParamNameList.Add(queryParam.Key);
                     var encodedValue = $"{queryParam.Key}={queryParam.Value}";
@@ -329,7 +325,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="payload"></param>
         /// <param name="httpRequestHeaders"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
-        protected virtual void AddHClaim(Dictionary<string, object> payload, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
+        protected virtual void AddHClaim(Dictionary<string, object> payload, IDictionary<string, IEnumerable<string>> httpRequestHeaders, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             if (payload == null)
                 throw LogHelper.LogArgumentNullException(nameof(payload));
@@ -337,23 +333,19 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (httpRequestHeaders == null || !httpRequestHeaders.Any())
                 throw LogHelper.LogArgumentNullException(nameof(httpRequestHeaders));
 
-            // eliminate duplicate headers.
-            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
-            // If a header or query parameter is repeated on either the outgoing request from the client or the
-            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
-            RemoveDuplicateHeaders(httpRequestHeaders);
+            var sanitizedHeaders = SanitizeHeaders(httpRequestHeaders);
 
             StringBuilder stringBuffer = new StringBuilder();
             List<string> headerNameList = new List<string>();
             try
             {
-                var lastHeader = httpRequestHeaders.Last();
-                foreach (var header in httpRequestHeaders)
+                var lastHeader = sanitizedHeaders.Last();
+                foreach (var header in sanitizedHeaders)
                 {
                     var headerName = header.Key.ToLower();
                     headerNameList.Add(headerName);
 
-                    var encodedValue = $"{headerName}: {string.Join(", ", header.Value)}";
+                    var encodedValue = $"{headerName}: {header.Value}";
                     if (header.Equals(lastHeader))
                         stringBuffer.Append(encodedValue);
                     else
@@ -654,12 +646,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                     throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23007, httpRequestUri.ToString())));
             }
 
-            // eliminate duplicate query params.
-            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
-            // If a header or query parameter is repeated on either the outgoing request from the client or the
-            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
-            var queryParamsList = GetQueryParamsWithoutDuplicates(httpRequestUri);
-            var queryParamsDictionary = queryParamsList.ToDictionary(x => x.Key, x => x.Value);
+            var sanitizedQueryParams = SanitizeQueryParams(httpRequestUri);
 
             string qClaimBase64UrlEncodedHash = string.Empty;
             string expectedBase64UrlEncodedHash = string.Empty;
@@ -681,9 +668,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 var lastQueryParam = qClaimQueryParamNames.LastOrDefault();
                 foreach (var queryParamName in qClaimQueryParamNames)
                 {
-                    if (!queryParamsDictionary.TryGetValue(queryParamName, out var queryParamsValue))
+                    if (!sanitizedQueryParams.TryGetValue(queryParamName, out var queryParamsValue))
                     {
-                        throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23028, queryParamName, string.Join(", ", queryParamsDictionary.Select(x => x.Key)))));
+                        throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23028, queryParamName, string.Join(", ", sanitizedQueryParams.Select(x => x.Key)))));
                     }
                     else
                     {
@@ -695,7 +682,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                         stringBuffer.Append(encodedValue);
 
                         // remove the query param from the dictionary to mark it as covered.
-                        queryParamsDictionary.Remove(queryParamName);
+                        sanitizedQueryParams.Remove(queryParamName);
                     }
                 }
 
@@ -706,8 +693,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23025, PopConstants.ClaimTypes.Q, e), e));
             }
 
-            if (!popAuthenticatorValidationPolicy.AcceptUncoveredQueryParameters && queryParamsDictionary.Any())
-                throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23029, string.Join(", ", queryParamsDictionary.Select(x => x.Key)))));
+            if (!popAuthenticatorValidationPolicy.AcceptUncoveredQueryParameters && sanitizedQueryParams.Any())
+                throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23029, string.Join(", ", sanitizedQueryParams.Select(x => x.Key)))));
 
             if (!string.Equals(expectedBase64UrlEncodedHash, qClaimBase64UrlEncodedHash, StringComparison.Ordinal))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidQClaimException(LogHelper.FormatInvariant(LogMessages.IDX23011, PopConstants.ClaimTypes.Q, expectedBase64UrlEncodedHash, qClaimBase64UrlEncodedHash)));
@@ -719,7 +706,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="jwtAuthenticator"></param>
         /// <param name="httpRequestHeaders"></param>
         /// <param name="popAuthenticatorValidationPolicy"></param>
-        protected virtual void ValidateHClaim(JsonWebToken jwtAuthenticator, IEnumerable<KeyValuePair<string, IEnumerable<string>>> httpRequestHeaders, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
+        protected virtual void ValidateHClaim(JsonWebToken jwtAuthenticator, IDictionary<string, IEnumerable<string>> httpRequestHeaders, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy)
         {
             if (jwtAuthenticator == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtAuthenticator));
@@ -733,12 +720,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (!jwtAuthenticator.TryGetPayloadValue(PopConstants.ClaimTypes.H, out JArray hClaim) || hClaim == null)
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.H)));
 
-            // eliminate duplicate headers.
-            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5
-            // If a header or query parameter is repeated on either the outgoing request from the client or the
-            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature.
-            RemoveDuplicateHeaders(httpRequestHeaders);
-            var httpRequestHeaderDictionary = httpRequestHeaders.ToDictionary(x => x.Key.ToLower(), x => x.Value);
+            var sanitizedHeaders = SanitizeHeaders(httpRequestHeaders);
 
             string hClaimBase64UrlEncodedHash = string.Empty;
             string expectedBase64UrlEncodedHash = string.Empty;
@@ -758,24 +740,22 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 StringBuilder stringBuffer = new StringBuilder();
                 var lastHeader = hClaimHeaderNames.Last();
-                foreach (var hClaimHeaderName in hClaimHeaderNames)
+                foreach (var headerName in hClaimHeaderNames)
                 {
-                    var headerName = hClaimHeaderName.ToLower();
-
-                    if (!httpRequestHeaderDictionary.TryGetValue(headerName, out var headerValue))
+                    if (!sanitizedHeaders.TryGetValue(headerName, out var headerValue))
                     {
-                        throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23027, headerName, string.Join(", ", httpRequestHeaderDictionary.Select(x => x.Key)))));
+                        throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23027, headerName, string.Join(", ", sanitizedHeaders.Select(x => x.Key)))));
                     }
                     else
                     {
-                        var encodedValue = $"{headerName}: {string.Join(", ", headerValue)}";
-                        if (hClaimHeaderName.Equals(lastHeader))
+                        var encodedValue = $"{headerName}: {headerValue}";
+                        if (headerName.Equals(lastHeader))
                             stringBuffer.Append(encodedValue);
                         else
                             stringBuffer.Append(encodedValue + _newlineSeparator);
 
                         // remove the header from the dictionary to mark it as covered.
-                        httpRequestHeaderDictionary.Remove(headerName);
+                        sanitizedHeaders.Remove(headerName);
                     }
                 }
 
@@ -786,8 +766,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23025, PopConstants.ClaimTypes.H, e), e));
             }
 
-            if (!popAuthenticatorValidationPolicy.AcceptUncoveredHeaders && httpRequestHeaderDictionary.Any())
-                throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23026, string.Join(", ", httpRequestHeaderDictionary.Select(x => x.Key)))));
+            if (!popAuthenticatorValidationPolicy.AcceptUncoveredHeaders && sanitizedHeaders.Any())
+                throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23026, string.Join(", ", sanitizedHeaders.Select(x => x.Key)))));
 
             if (!string.Equals(expectedBase64UrlEncodedHash, hClaimBase64UrlEncodedHash, StringComparison.Ordinal))
                 throw LogHelper.LogExceptionMessage(new PopProtocolInvalidHClaimException(LogHelper.FormatInvariant(LogMessages.IDX23011, PopConstants.ClaimTypes.H, expectedBase64UrlEncodedHash, hClaimBase64UrlEncodedHash)));
@@ -1093,31 +1073,74 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             }
         }
 
-        private List<KeyValuePair<string, string>> GetQueryParamsWithoutDuplicates(Uri httpRequestUri)
+        private Dictionary<string, string> SanitizeQueryParams(Uri httpRequestUri)
         {
+            // Remove repeated query params. https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5.
+            // "If a header or query parameter is repeated on either the outgoing request from the client or the
+            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature."
             var queryString = httpRequestUri.Query.TrimStart('?');
             var queryParams = queryString.Split('&').Select(x => x.Split('=')).Select(x => new KeyValuePair<string, string>(x[0], x[1])).ToList();
+            var sanitizedQueryParams = new Dictionary<string, string>(StringComparer.Ordinal);
+            var repeatedQueryParams = new List<string>();
+            foreach (var queryParam in queryParams)
+            {
+                var queryParamName = queryParam.Key;
 
-            var repeatedQueryParams = queryParams.GroupBy(x => x.Key, StringComparer.Ordinal).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
+                // if sanitizedQueryParams already contain the query parameter name it means that the query parameter name is repeated.
+                // in that case query parameter name should not be added, and the existing entry in sanitizedQueryParams should be removed.
+                if (sanitizedQueryParams.ContainsKey(queryParamName))
+                {
+                    sanitizedQueryParams.Remove(queryParamName);
+                    repeatedQueryParams.Add(queryParamName);
+                }
+                else
+                {
+                    sanitizedQueryParams.Add(queryParamName, queryParam.Value);
+                }
+            }
             if (repeatedQueryParams.Any())
             {
                 LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23004, string.Join(", ", repeatedQueryParams)));
-                queryParams.RemoveAll(x => repeatedQueryParams.Contains(x.Key, StringComparer.Ordinal));
             }
 
-            return queryParams;
+            return sanitizedQueryParams;
         }
 
-        private void RemoveDuplicateHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
+        private IDictionary<string, IEnumerable<string>> SanitizeHeaders(IDictionary<string, IEnumerable<string>> headers)
         {
-            // header names are processed in lowercase, hence OrdinalIgnoreCase.
-            // https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3.2
-            var repeatedHeaders = headers.GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
-            if (repeatedHeaders.Any())
+            // Remove repeated headers. https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-7.5.
+            // "If a header or query parameter is repeated on either the outgoing request from the client or the
+            // incoming request to the protected resource, that query parameter or header name MUST NOT be covered by the hash and signature."
+            // Remove the authorization header (https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-4.1).
+            var sanitizedHeaders = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            var repeatedHeaders = new List<string>();
+            foreach (var header in headers)
             {
-                LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23005, string.Join(", ", repeatedHeaders)));
-                headers = headers.Where(x => !repeatedHeaders.Contains(x.Key, StringComparer.OrdinalIgnoreCase));
+                var headerName = header.Key;
+
+                if (string.Equals(headerName, "Authorization", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // if sanitizedHeaders already contain the header name it means that the headerName is repeated.
+                // in that case headerName should not be added, and the existing entry in sanitizedHeaders should be removed.
+                if (sanitizedHeaders.ContainsKey(headerName))
+                {
+                    sanitizedHeaders.Remove(headerName);
+                    repeatedHeaders.Add(headerName.ToLowerInvariant());
+                }
+                // if header has more than one value don't add it to the sanitizedHeaders as it's repeated.
+                else if (header.Value.Count() > 1)
+                {
+                    repeatedHeaders.Add(headerName.ToLowerInvariant());
+                }
+                else
+                    sanitizedHeaders.Add(headerName, header.Value);
             }
+
+            if (repeatedHeaders.Any())
+                LogHelper.LogWarning(LogHelper.FormatInvariant(LogMessages.IDX23005, string.Join(", ", repeatedHeaders)));
+
+            return sanitizedHeaders;
         }
         #endregion
     }
