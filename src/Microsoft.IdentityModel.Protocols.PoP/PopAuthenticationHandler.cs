@@ -43,7 +43,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopAuthenticationHandler : IPopAuthenticatorCreator, IPopAuthenticatorValidator
+    public class PopAuthenticationHandler
     {
         private readonly JsonWebTokenHandler _handler = new JsonWebTokenHandler();
         private readonly Uri _baseUriHelper = new Uri("http://localhost", UriKind.Absolute);
