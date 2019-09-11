@@ -35,11 +35,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     public class PopAuthenticatorCreationPolicy
     {
         /// <summary>
-        ///
-        /// </summary>
-        public PopAuthenticatorVersion PopAuthenticatorVersion { get; set; } = PopAuthenticatorVersion.Default;
-
-        /// <summary>
         /// </summary>
         public static readonly TimeSpan DefaultClockSkew = TimeSpan.Zero;
 

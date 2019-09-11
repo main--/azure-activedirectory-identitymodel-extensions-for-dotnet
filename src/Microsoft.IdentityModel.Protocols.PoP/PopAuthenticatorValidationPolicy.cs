@@ -66,11 +66,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     public class PopAuthenticatorValidationPolicy
     {
         /// <summary>
-        ///
-        /// </summary>
-        public PopAuthenticatorVersion PopAuthenticatorVersion { get; set; } = PopAuthenticatorVersion.Default;
-
-        /// <summary>
         /// 
         /// </summary>
         public static readonly TimeSpan DefaultAuthenticatorLifetime = TimeSpan.FromMinutes(5);
