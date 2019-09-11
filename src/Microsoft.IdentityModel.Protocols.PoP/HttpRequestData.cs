@@ -27,6 +27,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
@@ -48,7 +50,23 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         public byte[] HttpRequestBody { get; set; }
 
         /// <summary>
+        /// 
         /// </summary>
-        public IEnumerable<KeyValuePair<string, IEnumerable<string>>> HttpRequestHeaders { get; set; }
+        public IDictionary<string, IEnumerable<string>> HttpRequestHeaders { get; set; }
+
+        internal void AppendHeaders(HttpHeaders headers)
+        {
+            if (HttpRequestHeaders == null)
+                HttpRequestHeaders = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var header in headers)
+            {
+                if (HttpRequestHeaders.ContainsKey(header.Key))
+                    HttpRequestHeaders[header.Key] = HttpRequestHeaders[header.Key].Concat(header.Value);
+                else
+                    HttpRequestHeaders.Add(header.Key, header.Value);
+            }
+
+        }
     }
 }
