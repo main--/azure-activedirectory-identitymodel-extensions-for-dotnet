@@ -59,7 +59,20 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="popAuthenticatorCreationPolicy"></param>
         /// <returns></returns>
-        public virtual string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
+        public string CreatePopAuthenticator(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
+        {
+            return CreatePopAuthenticatorProtected(tokenWithCnfClaim, signingCredentials, httpRequestData, popAuthenticatorCreationPolicy);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tokenWithCnfClaim"></param>
+        /// <param name="signingCredentials"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="popAuthenticatorCreationPolicy"></param>
+        /// <returns></returns>
+        protected virtual string CreatePopAuthenticatorProtected(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopAuthenticatorCreationPolicy popAuthenticatorCreationPolicy)
         {
             var header = CreatePopAuthenticatorHeader(signingCredentials, popAuthenticatorCreationPolicy);
             var payload = CreatePopAuthenticatorPayload(tokenWithCnfClaim, httpRequestData, popAuthenticatorCreationPolicy);
@@ -405,6 +418,20 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
         #region Pop authenticator validation
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="authenticator"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="tokenValidationParameters"></param>
+        /// <param name="popAuthenticatorValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<PopAuthenticatorValidationResult> ValidatePopAuthenticatorAsync(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
+        {
+            return await ValidatePopAuthenticatorProtectedAsync(authenticator, httpRequestData, tokenValidationParameters, popAuthenticatorValidationPolicy, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="authenticator"></param>
@@ -413,7 +440,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="popAuthenticatorValidationPolicy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<PopAuthenticatorValidationResult> ValidatePopAuthenticatorAsync(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
+        protected virtual async Task<PopAuthenticatorValidationResult> ValidatePopAuthenticatorProtectedAsync(string authenticator, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopAuthenticatorValidationPolicy popAuthenticatorValidationPolicy, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(authenticator))
                 throw LogHelper.LogArgumentNullException(nameof(authenticator));
