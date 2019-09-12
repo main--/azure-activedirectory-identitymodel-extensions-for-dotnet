@@ -26,9 +26,19 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.IdentityModel.Protocols.PoP
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="tokenWithCnfClaim"></param>
+    /// <param name="payload"></param>
+    /// <param name="httpRequestData"></param>
+    /// <param name="popTokenCreationPolicy"></param>
+    public delegate void CustomClaimCreator(string tokenWithCnfClaim, IDictionary<string, object> payload, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy);
+
     /// <summary>
     /// 
     /// </summary>
@@ -82,5 +92,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// Gets or sets a value indicating whether the <see cref="PopConstants.ClaimTypes.B"/> claim should be created or not.
         /// </summary>
         public bool CreateB { get; set; } = false;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public CustomClaimCreator CustomClaimCreator { get; set; }
     }
 }

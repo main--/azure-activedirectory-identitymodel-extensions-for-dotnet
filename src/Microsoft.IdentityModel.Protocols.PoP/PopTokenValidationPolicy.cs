@@ -39,6 +39,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="jwtPopToken"></param>
+    /// <param name="validatedToken"></param>
+    /// <param name="httpRequestData"></param>
+    /// <param name="popTokenValidationPolicy"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public delegate Task CustomClaimValidatorAsync(JsonWebToken jwtPopToken, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="validatedToken"></param>
     /// <param name="popTokenValidationPolicy"></param>
     /// <param name="cancellationToken"></param>
@@ -95,6 +106,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         public CnfDecryptionKeysResolverAsync CnfDecryptionKeysResolverAsync { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public CustomClaimValidatorAsync CustomClaimValidatorAsync { get; set; }
 
         /// <summary>
         /// 

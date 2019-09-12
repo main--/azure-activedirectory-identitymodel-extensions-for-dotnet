@@ -145,6 +145,8 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popTokenCreationPolicy.CreateNonce)
                 AddNonceClaim(payload, popTokenCreationPolicy);
 
+            popTokenCreationPolicy.CustomClaimCreator?.Invoke(tokenWithCnfClaim, payload, httpRequestData, popTokenCreationPolicy);
+
             return JObject.FromObject(payload).ToString(Formatting.None);
         }
 
@@ -494,6 +496,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             if (popTokenValidationPolicy.ValidateB)
                 ValidateBClaim(jwtPopToken, httpRequestData?.HttpRequestBody, popTokenValidationPolicy);
+
+            if (popTokenValidationPolicy.CustomClaimValidatorAsync != null)
+                await popTokenValidationPolicy.CustomClaimValidatorAsync(jwtPopToken, validatedToken, httpRequestData, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
 
             return jwtPopToken;
         }
