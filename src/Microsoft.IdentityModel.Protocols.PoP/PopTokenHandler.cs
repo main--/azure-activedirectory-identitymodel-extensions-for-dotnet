@@ -43,7 +43,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
-    public class PopTokenHandler
+    public class PopTokenHandler : IPopTokenCreator, IPopTokenValidator
     {
         private readonly JsonWebTokenHandler _jwtTokenHandler = new JsonWebTokenHandler();
         private readonly Uri _baseUriHelper = new Uri("http://localhost", UriKind.Absolute);
@@ -58,12 +58,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="signingCredentials"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popTokenCreationPolicy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public string CreatePopToken(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
+        public async Task<string> CreatePopTokenAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy, CancellationToken cancellationToken)
         {
             var header = CreatePopTokenHeader(signingCredentials, popTokenCreationPolicy);
             var payload = CreatePopTokenPayload(tokenWithCnfClaim, httpRequestData, popTokenCreationPolicy);
-            return SignPopToken(header, payload, signingCredentials);
+            return await SignPopTokenAsync(header, payload, signingCredentials, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -143,8 +144,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="header"></param>
         /// <param name="payload"></param>
         /// <param name="signingCredentials"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual string SignPopToken(string header, string payload, SigningCredentials signingCredentials)
+        protected virtual Task<string> SignPopTokenAsync(string header, string payload, SigningCredentials signingCredentials, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(header))
                 throw LogHelper.LogArgumentNullException(nameof(header));
@@ -154,7 +156,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             var message = $"{Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(header))}.{Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(payload))}";
             var signature = JwtTokenUtilities.CreateEncodedSignature(message, signingCredentials);
-            return $"{message}.{signature}";
+            return Task.FromResult($"{message}.{signature}");
         }
 
         /// <summary>
