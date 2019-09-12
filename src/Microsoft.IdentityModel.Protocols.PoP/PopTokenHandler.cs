@@ -392,12 +392,9 @@ namespace Microsoft.IdentityModel.Protocols.PoP
                 throw LogHelper.LogArgumentNullException(nameof(payload));
 
             if (popTokenCreationPolicy.NonceClaimCreator != null)
-            {
                 popTokenCreationPolicy.NonceClaimCreator(payload, popTokenCreationPolicy);
-                return;
-            }
-
-            payload.Add(PopConstants.ClaimTypes.Nonce, Guid.NewGuid().ToString("N"));
+            else
+                payload.Add(PopConstants.ClaimTypes.Nonce, Guid.NewGuid().ToString("N"));
         }
         #endregion
 
