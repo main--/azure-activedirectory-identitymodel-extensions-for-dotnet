@@ -58,18 +58,17 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
             var RsaSecurityKey_2048 = new RsaSecurityKey(RsaParameters_2048);
             var signingCredentials = new SigningCredentials(RsaSecurityKey_2048, SecurityAlgorithms.RsaSha256, SecurityAlgorithms.Sha256);
 
-            // set the HttpRequestData via HttpRequestMessage
+            /* set the HttpRequestData via HttpRequestMessage
             var requestMessage = new HttpRequestMessage();
             requestMessage.RequestUri = new Uri("https://www.contoso.com:443/it/requests?b=bar&a=foo&c=duck");
             requestMessage.Method = HttpMethod.Get;
             requestMessage.Headers.Add("Etag", "742-3u8f34-3r2nvv3");
             requestMessage.Content = new ByteArrayContent(Guid.NewGuid().ToByteArray());
             requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
             var httpRequestData = await requestMessage.ToHttpRequestDataAsync().ConfigureAwait(false);
+            */
 
             //or set up http request data directly
-            /*
             var httpRequestData = new HttpRequestData()
             {
                 HttpMethod = "GET",
@@ -81,7 +80,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP.Tests
                     { "Etag", new List<string> { "742-3u8f34-3r2nvv3" } },
                 }
             };
-            */
+            
 
             // adjust the PopTokenCreationPolicy
             var popCreationPolicy = new PopTokenCreationPolicy()
