@@ -61,19 +61,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         public string CreatePopToken(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
         {
-            return CreatePopTokenProtected(tokenWithCnfClaim, signingCredentials, httpRequestData, popTokenCreationPolicy);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tokenWithCnfClaim"></param>
-        /// <param name="signingCredentials"></param>
-        /// <param name="httpRequestData"></param>
-        /// <param name="popTokenCreationPolicy"></param>
-        /// <returns></returns>
-        protected virtual string CreatePopTokenProtected(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
-        {
             var header = CreatePopTokenHeader(signingCredentials, popTokenCreationPolicy);
             var payload = CreatePopTokenPayload(tokenWithCnfClaim, httpRequestData, popTokenCreationPolicy);
             return SignPopToken(header, payload, signingCredentials);
@@ -112,7 +99,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="popTokenCreationPolicy"></param>
         /// <returns></returns>
-        protected virtual string CreatePopTokenPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
+        protected string CreatePopTokenPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
         {
             if (popTokenCreationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popTokenCreationPolicy));
@@ -290,7 +277,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             if (!httpRequestUri.IsAbsoluteUri)
             {
-                 if (!Uri.TryCreate(_baseUriHelper, httpRequestUri, out httpRequestUri))
+                if (!Uri.TryCreate(_baseUriHelper, httpRequestUri, out httpRequestUri))
                     throw LogHelper.LogExceptionMessage(new PopCreationException(LogHelper.FormatInvariant(LogMessages.IDX23007, httpRequestUri.ToString())));
             }
 
@@ -426,28 +413,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <returns></returns>
         public async Task<PopTokenValidationResult> ValidatePopTokenAsync(string popToken, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
         {
-            return await ValidatePopTokenProtectedAsync(popToken, httpRequestData, tokenValidationParameters, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="popToken"></param>
-        /// <param name="httpRequestData"></param>
-        /// <param name="tokenValidationParameters"></param>
-        /// <param name="popTokenValidationPolicy"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        protected virtual async Task<PopTokenValidationResult> ValidatePopTokenProtectedAsync(string popToken, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
-        {
             if (string.IsNullOrEmpty(popToken))
                 throw LogHelper.LogArgumentNullException(nameof(popToken));
 
-            var jwtPopToken = _jwtTokenHandler.ReadJsonWebToken(popToken);
-            if (!jwtPopToken.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken) || accessToken == null)
-            {
-                throw LogHelper.LogExceptionMessage(new PopInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.At)));
-            }
+            var jwtPopToken = ReadPopTokenAsJwt(popToken);
+            var accessToken = ReadAccessToken(jwtPopToken);
             var validatedAccessToken = await ValidateAccessTokenAsync(accessToken, tokenValidationParameters, cancellationToken).ConfigureAwait(false) as JsonWebToken;
             var validatedPopToken = await ValidatePopTokenAsync(jwtPopToken, validatedAccessToken, httpRequestData, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
 
@@ -463,13 +433,61 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="popToken"></param>
+        /// <returns></returns>
+        protected virtual JsonWebToken ReadPopTokenAsJwt(string popToken)
+        {
+            return _jwtTokenHandler.ReadJsonWebToken(popToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtPopToken"></param>
+        /// <returns></returns>
+        protected virtual string ReadAccessToken(JsonWebToken jwtPopToken)
+        {
+            if (!jwtPopToken.TryGetPayloadValue(PopConstants.ClaimTypes.At, out string accessToken) || accessToken == null)
+                throw LogHelper.LogExceptionMessage(new PopInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23003, PopConstants.ClaimTypes.At)));
+
+            return accessToken;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="tokenValidationParameters"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected virtual Task<SecurityToken> ValidateAccessTokenAsync(string accessToken, TokenValidationParameters tokenValidationParameters, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+                throw LogHelper.LogArgumentNullException(nameof(accessToken));
+
+            if (tokenValidationParameters == null)
+                throw LogHelper.LogArgumentNullException(nameof(tokenValidationParameters));
+
+            var tokenValidationResult = _jwtTokenHandler.ValidateToken(accessToken, tokenValidationParameters);
+
+            if (!tokenValidationResult.IsValid)
+            {
+                throw LogHelper.LogExceptionMessage(new PopInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23013, tokenValidationResult.Exception), tokenValidationResult.Exception));
+            }
+
+            return Task.FromResult(tokenValidationResult.SecurityToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="jwtPopToken"></param>
         /// <param name="validatedToken"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="popTokenValidationPolicy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual async Task<JsonWebToken> ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
+        protected async Task<JsonWebToken> ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
         {
             if (jwtPopToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtPopToken));
@@ -840,31 +858,6 @@ namespace Microsoft.IdentityModel.Protocols.PoP
 
             if (!string.Equals(expectedBase64UrlEncodedHash, bClaim, StringComparison.Ordinal))
                 throw LogHelper.LogExceptionMessage(new PopInvalidBClaimException(LogHelper.FormatInvariant(LogMessages.IDX23011, PopConstants.ClaimTypes.B, expectedBase64UrlEncodedHash, bClaim)));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accessToken"></param>
-        /// <param name="tokenValidationParameters"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        protected virtual Task<SecurityToken> ValidateAccessTokenAsync(string accessToken, TokenValidationParameters tokenValidationParameters, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-                throw LogHelper.LogArgumentNullException(nameof(accessToken));
-
-            if (tokenValidationParameters == null)
-                throw LogHelper.LogArgumentNullException(nameof(tokenValidationParameters));
-
-            var tokenValidationResult = _jwtTokenHandler.ValidateToken(accessToken, tokenValidationParameters);
-
-            if (!tokenValidationResult.IsValid)
-            {
-                throw LogHelper.LogExceptionMessage(new PopInvalidAtClaimException(LogHelper.FormatInvariant(LogMessages.IDX23013, tokenValidationResult.Exception), tokenValidationResult.Exception));
-            }
-
-            return Task.FromResult(tokenValidationResult.SecurityToken);
         }
         #endregion
 
