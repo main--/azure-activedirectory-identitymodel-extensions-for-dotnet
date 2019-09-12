@@ -42,6 +42,13 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="payload"></param>
+    /// <param name="popTokenCreationPolicy"></param>
+    public delegate void NonceClaimCreator(IDictionary<string, object> payload, PopTokenCreationPolicy popTokenCreationPolicy);
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class PopTokenCreationPolicy
     {
         /// <summary>
@@ -97,5 +104,10 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// 
         /// </summary>
         public CustomClaimCreator CustomClaimCreator { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public NonceClaimCreator NonceClaimCreator { get; set; }
     }
 }
