@@ -525,6 +525,12 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (popKey == null)
                 throw LogHelper.LogExceptionMessage(new PopInvalidSignatureException(LogHelper.FormatInvariant(LogMessages.IDX23030)));
 
+            if (popTokenValidationPolicy.PopTokenSignatureValidatorAsync != null)
+            {
+                await popTokenValidationPolicy.PopTokenSignatureValidatorAsync(popKey, jwtPopToken, validatedToken, popTokenValidationPolicy, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
             var signatureProvider = popKey.CryptoProviderFactory.CreateForVerifying(popKey, jwtPopToken.Alg);
             if (signatureProvider == null)
                 throw LogHelper.LogExceptionMessage(new PopInvalidSignatureException(LogHelper.FormatInvariant(LogMessages.IDX23000, popKey?.ToString() ?? "Null", jwtPopToken.Alg ?? "Null")));

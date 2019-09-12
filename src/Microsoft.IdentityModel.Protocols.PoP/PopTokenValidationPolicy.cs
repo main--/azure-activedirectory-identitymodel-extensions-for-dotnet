@@ -72,6 +72,18 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     /// <returns></returns>
     public delegate Task PopTokenReplayValidatorAsync(JsonWebToken jwtPopToken, CancellationToken cancellationToken);
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="popKey"></param>
+    /// <param name="jwtPopToken"></param>
+    /// <param name="validatedToken"></param>
+    /// <param name="popTokenValidationPolicy"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public delegate Task PopTokenSignatureValidatorAsync(SecurityKey popKey, JsonWebToken jwtPopToken, JsonWebToken validatedToken, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken);
+
     /// <summary>
     /// 
     /// </summary>
@@ -155,6 +167,11 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// Gets or sets a delegate that will be used to check if the pop token is replayed.
         /// </summary>
         public PopTokenReplayValidatorAsync PopTokenReplayValidatorAsync { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PopTokenSignatureValidatorAsync PopTokenSignatureValidatorAsync { get; set; }
 
         /// <summary>
         /// </summary>
