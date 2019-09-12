@@ -93,7 +93,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             var header = new JObject
             {
                 { JwtHeaderParameterNames.Alg, signingCredentials.Algorithm },
-                { JwtHeaderParameterNames.Typ, JwtConstants.HeaderType }
+                { JwtHeaderParameterNames.Typ, PopConstants.PopTokenType }
             };
 
             if (signingCredentials.Key?.KeyId != null)
@@ -1148,7 +1148,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             {
                 var headerName = header.Key;
 
-                if (string.Equals(headerName, "Authorization", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(headerName, PopConstants.AuthorizationHeader, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 // if sanitizedHeaders already contain the header name it means that the headerName is repeated.

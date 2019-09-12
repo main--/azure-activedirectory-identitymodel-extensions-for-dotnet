@@ -46,7 +46,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
             if (string.IsNullOrEmpty(popToken))
                 throw LogHelper.LogArgumentNullException(nameof(popToken));
 
-            return $"{PopConstants.Pop} {popToken}";
+            return $"{PopConstants.PopAuthorizationHeader} {popToken}";
         }
 
         /// <summary>

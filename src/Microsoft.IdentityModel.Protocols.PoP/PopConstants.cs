@@ -33,14 +33,19 @@ namespace Microsoft.IdentityModel.Protocols.PoP
     public static class PopConstants
     {
         /// <summary>
-        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-3
+        /// https://tools.ietf.org/html/rfc7235#section-4.2
         /// </summary>
-        public const string PopAccessToken = "pop_access_token";
+        public const string AuthorizationHeader = "Authorization";
 
         /// <summary>
-        /// https://tools.ietf.org/html/rfc7800#section-3.1
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-4.1
         /// </summary>
-        public const string Pop = "PoP";
+        public const string PopAuthorizationHeader = "PoP";
+
+        /// <summary>
+        /// https://tools.ietf.org/html/draft-ietf-oauth-signed-http-request-03#section-6.1
+        /// </summary>
+        public const string PopTokenType = "pop";
 
         /// <summary>
         /// 
