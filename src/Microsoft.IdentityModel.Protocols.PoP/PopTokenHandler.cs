@@ -100,7 +100,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="httpRequestData"></param>
         /// <param name="popTokenCreationPolicy"></param>
         /// <returns></returns>
-        protected internal string CreatePopTokenPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
+        protected internal virtual string CreatePopTokenPayload(string tokenWithCnfClaim, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy)
         {
             if (popTokenCreationPolicy == null)
                 throw LogHelper.LogArgumentNullException(nameof(popTokenCreationPolicy));
@@ -486,7 +486,7 @@ namespace Microsoft.IdentityModel.Protocols.PoP
         /// <param name="popTokenValidationPolicy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected internal async Task<JsonWebToken> ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedAccessToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
+        protected internal virtual async Task<JsonWebToken> ValidatePopTokenAsync(JsonWebToken jwtPopToken, JsonWebToken validatedAccessToken, HttpRequestData httpRequestData, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken)
         {
             if (jwtPopToken == null)
                 throw LogHelper.LogArgumentNullException(nameof(jwtPopToken));
