@@ -27,34 +27,34 @@
 
 using System;
 
-namespace Microsoft.IdentityModel.Protocols.PoP
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
     /// </summary>
-    public class PopInvalidAtClaimException : PopValidationException
+    public class PopInvalidTsClaimException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidTsClaimException"/> class.
         /// </summary>
-        public PopInvalidAtClaimException()
+        public PopInvalidTsClaimException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidTsClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopInvalidAtClaimException(string message)
+        public PopInvalidTsClaimException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidAtClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidTsClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopInvalidAtClaimException(string message, Exception innerException)
+        public PopInvalidTsClaimException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

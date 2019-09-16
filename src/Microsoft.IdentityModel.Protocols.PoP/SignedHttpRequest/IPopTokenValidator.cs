@@ -23,40 +23,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-//------------------------------------------------------------------------------
 
-using System;
+using Microsoft.IdentityModel.Tokens;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Microsoft.IdentityModel.Protocols.PoP
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
+    /// 
     /// </summary>
-    public class PopInvalidPopKeyException : PopValidationException
+    public interface IPopTokenValidator
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidPopKeyException"/> class.
+        /// 
         /// </summary>
-        public PopInvalidPopKeyException()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidPopKeyException"/> class.
-        /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopInvalidPopKeyException(string message)
-            : base(message)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidPopKeyException"/> class.
-        /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopInvalidPopKeyException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        /// <param name="popToken"></param>
+        /// <param name="httpRequestData"></param>
+        /// <param name="tokenValidationParameters"></param>
+        /// <param name="popTokenValidationPolicy"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<PopTokenValidationResult> ValidatePopTokenAsync(string popToken, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken);
     }
 }

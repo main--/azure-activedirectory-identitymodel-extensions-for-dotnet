@@ -28,22 +28,22 @@ using Microsoft.IdentityModel.Tokens;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.IdentityModel.Protocols.PoP
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface IPopTokenValidator
+    public interface IPopTokenCreator
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="popToken"></param>
+        /// <param name="tokenWithCnfClaim"></param>
+        /// <param name="signingCredentials"></param>
         /// <param name="httpRequestData"></param>
-        /// <param name="tokenValidationParameters"></param>
-        /// <param name="popTokenValidationPolicy"></param>
+        /// <param name="popTokenCreationPolicy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<PopTokenValidationResult> ValidatePopTokenAsync(string popToken, HttpRequestData httpRequestData, TokenValidationParameters tokenValidationParameters, PopTokenValidationPolicy popTokenValidationPolicy, CancellationToken cancellationToken);
+        Task<string> CreatePopTokenAsync(string tokenWithCnfClaim, SigningCredentials signingCredentials, HttpRequestData httpRequestData, PopTokenCreationPolicy popTokenCreationPolicy, CancellationToken cancellationToken);
     }
 }

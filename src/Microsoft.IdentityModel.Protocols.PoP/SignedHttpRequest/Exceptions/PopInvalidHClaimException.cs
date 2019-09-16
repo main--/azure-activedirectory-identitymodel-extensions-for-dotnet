@@ -27,34 +27,34 @@
 
 using System;
 
-namespace Microsoft.IdentityModel.Protocols.PoP
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
     /// </summary>
-    public class PopInvalidQClaimException : PopValidationException
+    public class PopInvalidHClaimException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidQClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
-        public PopInvalidQClaimException()
+        public PopInvalidHClaimException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidQClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public PopInvalidQClaimException(string message)
+        public PopInvalidHClaimException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopInvalidQClaimException"/> class.
+        /// Initializes a new instance of the <see cref="PopInvalidHClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public PopInvalidQClaimException(string message, Exception innerException)
+        public PopInvalidHClaimException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
