@@ -39,6 +39,15 @@ namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
         /// 
         /// </summary>
         /// <param name="popToken"></param>
+        /// <param name="popTokenValidationPolicy"></param>
+        /// <param name="exceptionMessage"></param>
+        /// <returns></returns>
+        bool CanValidatePopToken(string popToken, PopTokenValidationPolicy popTokenValidationPolicy, out string exceptionMessage);
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="popToken"></param>
         /// <param name="httpRequestData"></param>
         /// <param name="tokenValidationParameters"></param>
         /// <param name="popTokenValidationPolicy"></param>
