@@ -27,34 +27,34 @@
 
 using System;
 
-namespace Microsoft.IdentityModel.Protocols.PoP.HttpRequest
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
     /// </summary>
-    public class HttpRequestPopInvalidCnfClaimException : PopValidationException
+    public class SignedHttpRequestCreationException : PopCreationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidCnfClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestCreationException"/> class.
         /// </summary>
-        public HttpRequestPopInvalidCnfClaimException()
+        public SignedHttpRequestCreationException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidCnfClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestCreationException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public HttpRequestPopInvalidCnfClaimException(string message)
+        public SignedHttpRequestCreationException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidCnfClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestCreationException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public HttpRequestPopInvalidCnfClaimException(string message, Exception innerException)
+        public SignedHttpRequestCreationException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

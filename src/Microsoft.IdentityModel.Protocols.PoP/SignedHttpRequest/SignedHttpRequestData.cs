@@ -23,40 +23,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-//------------------------------------------------------------------------------
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
 
-using System;
-
-namespace Microsoft.IdentityModel.Protocols.PoP.HttpRequest
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
+    /// 
     /// </summary>
-    public class HttpRequestPopInvalidBClaimException : PopValidationException
+    public abstract class SignedHttpRequestData
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidBClaimException"/> class.
+        /// 
         /// </summary>
-        public HttpRequestPopInvalidBClaimException()
+        /// <param name="httpRequestData"></param>
+        /// <param name="callContext"></param>
+        public SignedHttpRequestData(HttpRequestData httpRequestData, CallContext callContext)
         {
+            HttpRequestData = httpRequestData ?? throw LogHelper.LogArgumentNullException(nameof(httpRequestData));
+            CallContext = callContext ?? throw LogHelper.LogArgumentNullException(nameof(callContext));
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidHClaimException"/> class.
+        /// 
         /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public HttpRequestPopInvalidBClaimException(string message)
-            : base(message)
-        {
-        }
+        public CallContext CallContext { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidBClaimException"/> class.
+        /// 
         /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public HttpRequestPopInvalidBClaimException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        public HttpRequestData HttpRequestData { get; }
     }
 }

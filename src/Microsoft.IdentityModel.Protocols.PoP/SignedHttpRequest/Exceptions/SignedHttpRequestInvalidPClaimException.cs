@@ -27,34 +27,34 @@
 
 using System;
 
-namespace Microsoft.IdentityModel.Protocols.PoP.HttpRequest
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
     /// </summary>
-    public class HttpRequestPopInvalidHClaimException : PopValidationException
+    public class SignedHttpRequestInvalidPClaimException : PopValidationException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidHClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestInvalidPClaimException"/> class.
         /// </summary>
-        public HttpRequestPopInvalidHClaimException()
+        public SignedHttpRequestInvalidPClaimException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidHClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestInvalidPClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public HttpRequestPopInvalidHClaimException(string message)
+        public SignedHttpRequestInvalidPClaimException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidHClaimException"/> class.
+        /// Initializes a new instance of the <see cref="SignedHttpRequestInvalidPClaimException"/> class.
         /// </summary>
         /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
         /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public HttpRequestPopInvalidHClaimException(string message, Exception innerException)
+        public SignedHttpRequestInvalidPClaimException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

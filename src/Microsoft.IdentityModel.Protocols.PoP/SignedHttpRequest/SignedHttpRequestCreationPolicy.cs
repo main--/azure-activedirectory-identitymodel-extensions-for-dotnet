@@ -28,30 +28,28 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.IdentityModel.Protocols.PoP.HttpRequest
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
-    using ClaimTypes = PopConstants.HttpRequest.ClaimTypes;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="tokenWithCnfClaim"></param>
-    /// <param name="payload"></param>
-    /// <param name="httpRequestData"></param>
-    /// <param name="popTokenCreationPolicy"></param>
-    public delegate void CustomClaimCreator(string tokenWithCnfClaim, IDictionary<string, object> payload, HttpRequestData httpRequestData, HttpRequestPopTokenCreationPolicy popTokenCreationPolicy);
+    using ClaimTypes = PopConstants.SignedHttpRequest.ClaimTypes;
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="payload"></param>
-    /// <param name="popTokenCreationPolicy"></param>
-    public delegate void NonceClaimCreator(IDictionary<string, object> payload, HttpRequestPopTokenCreationPolicy popTokenCreationPolicy);
+    /// <param name="signedHttpRequestCreationData"></param>
+    public delegate void CustomClaimCreator(IDictionary<string, object> payload, SignedHttpRequestCreationData signedHttpRequestCreationData);
 
     /// <summary>
     /// 
     /// </summary>
-    public class HttpRequestPopTokenCreationPolicy
+    /// <param name="payload"></param>
+    /// <param name="signedHttpRequestCreationData"></param>
+    public delegate void NonceClaimCreator(IDictionary<string, object> payload, SignedHttpRequestCreationData signedHttpRequestCreationData);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SignedHttpRequestCreationPolicy
     {
         /// <summary>
         /// </summary>

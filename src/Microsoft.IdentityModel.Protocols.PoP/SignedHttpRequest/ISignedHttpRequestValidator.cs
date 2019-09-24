@@ -23,40 +23,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-//------------------------------------------------------------------------------
 
-using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Microsoft.IdentityModel.Protocols.PoP.HttpRequest
+namespace Microsoft.IdentityModel.Protocols.PoP.SignedHttpRequest
 {
     /// <summary>
+    /// 
     /// </summary>
-    public class HttpRequestPopInvalidPopKeyException : PopValidationException
+    public interface ISignedHttpRequestValidator
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidPopKeyException"/> class.
+        /// 
         /// </summary>
-        public HttpRequestPopInvalidPopKeyException()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidPopKeyException"/> class.
-        /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        public HttpRequestPopInvalidPopKeyException(string message)
-            : base(message)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpRequestPopInvalidPopKeyException"/> class.
-        /// </summary>
-        /// <param name="message">Additional information to be included in the exception and displayed to user.</param>
-        /// <param name="innerException">A <see cref="Exception"/> that represents the root cause of the exception.</param>
-        public HttpRequestPopInvalidPopKeyException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+        /// <param name="signedHttpRequestValidationData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<SignedHttpRequestValidationResult> ValidateSignedHttpRequestAsync(SignedHttpRequestValidationData signedHttpRequestValidationData, CancellationToken cancellationToken);
     }
 }
