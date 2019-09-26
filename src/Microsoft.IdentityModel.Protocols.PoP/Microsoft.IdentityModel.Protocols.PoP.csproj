@@ -7,7 +7,7 @@
     <Description>Includes types that provide support for PoP protocol.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Microsoft.IdentityModel.Protocols.PoP</PackageId>
-    <PackageTags>.NET;Windows;Authentication;Identity;PoP;ProofOfPossession</PackageTags>
+    <PackageTags>.NET;Windows;Authentication;Identity;PoP;ProofOfPossession;SignedHttpRequest</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -28,7 +28,10 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' Or '$(TargetFramework)' == 'net451' Or '$(TargetFramework)' == 'net461' ">
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup >
+    <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
   </ItemGroup>
 
 </Project>
