@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 
 using Microsoft.IdentityModel.TestUtils;
+using Microsoft.IdentityModel.Tokens.Saml2;
 using System;
 using System.IO;
 using System.Text;
@@ -44,9 +45,9 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust.Tests
         }
 
         [Theory, MemberData(nameof(SerailizeWsTrustRequestTheoryData))]
-        public void SerializeWsTrustRequestTheoryData(WsTrustTheoryData theoryData)
+        public void SerializeWsTrustRequest(WsTrustTheoryData theoryData)
         {
-            var context = TestUtilities.WriteHeader($"{this}.SerializeWsTrustRequestTheoryData", theoryData);
+            var context = TestUtilities.WriteHeader($"{this}.SerializeWsTrustRequest", theoryData);
 
             try
             {
@@ -77,10 +78,11 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust.Tests
                     new WsTrustTheoryData
                     {
                         First = true,
-                        WsTrustRequest = new WsTrustRequest(WsTrust13Constants.RequestTypes.Issue, WsTrustVersion.WsTrust13)
+                        WsTrustRequest = new WsTrustRequest(WsTrustRequestType.Issue, WsTrustVersion.WsTrust13)
                         {
                             AppliesTo = WsTrustMessageTestDefaults.EndpointReference,
-                            Context = "Context"
+                            Context = "Context",
+                            TokenType = Saml2Constants.OasisWssSaml2TokenProfile11
                         },
                         TestId = "SerializeWsTrustRequestTheoryData1"
                     }

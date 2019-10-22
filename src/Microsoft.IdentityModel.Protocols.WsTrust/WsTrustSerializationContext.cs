@@ -27,6 +27,7 @@
 
 #pragma warning disable 1591
 
+using Microsoft.IdentityModel.Logging;
 using System;
 
 namespace Microsoft.IdentityModel.Protocols.WsTrust
@@ -111,6 +112,18 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust
         public string Validate => _validate;
 
         public WsTrustVersion WsTrustVersion { get; }
+
+        public string RequestType(WsTrustRequestType wsTrustRequestType)
+        {
+            switch (wsTrustRequestType)
+            {
+                case WsTrustRequestType.Issue:
+                    return _issue;
+            }
+
+            throw LogHelper.LogExceptionMessage(new NotSupportedException($"WsTrustRequestType not supported: '{wsTrustRequestType}'."));
+        }
+
 
         //public string RSTIssue =
         //public string RSTRIssue =

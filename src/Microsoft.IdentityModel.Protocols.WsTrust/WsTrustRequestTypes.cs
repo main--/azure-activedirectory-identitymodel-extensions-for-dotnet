@@ -25,41 +25,41 @@
 //
 //------------------------------------------------------------------------------
 
-using Microsoft.IdentityModel.Logging;
-using System;
-using System.Reflection.Emit;
-
 #pragma warning disable 1591
 
 namespace Microsoft.IdentityModel.Protocols.WsTrust
 {
-    /// <summary>
-    /// The class defines the wst:RequestSecurityToken element which 
-    /// is used to request a security token.
-    /// </summary>
-    public class WsTrustRequest : WsTrustMessage
+    public enum WsTrustRequestType : byte
     {
-        /// <summary>
-        /// This constructor is usually used on the sending side to instantiate a
-        /// instance of RST based on the request type and its string value.
-        /// </summary>
-        public WsTrustRequest(WsTrustRequestType requestType)
-            : this(requestType, WsTrustVersion.WsTrust13)
+        Issue = 1,
+        RSTIssue,
+        RSTRIssue,
+        RSTRCIssueFinal,
+
+        Renew,
+        RSTRenew,
+        RSTRRenew,
+        RSTRRenewFinal,
+
+        Cancel,
+        RSTCancel,
+        RSTRCancel,
+        RSTRCancelFinal,
+
+        Validate,
+        RSTValidate,
+        RSTRValidate,
+        RSTRValidateFinal,
+
+        RSTSStatus
+    }
+
+    internal static class WsTrustRequestTypeHelper
+    {
+        public static bool IsDefined(WsTrustRequestType requestType)
         {
+            return requestType == WsTrustRequestType.Issue;
         }
-
-        public WsTrustRequest(WsTrustRequestType requestType, WsTrustVersion wsTrustVersion)
-            : base(wsTrustVersion)
-        {
-            WsTrustSerializationContext = new WsTrustSerializationContext(wsTrustVersion);
-            RequestType = WsTrustSerializationContext.RequestType(requestType);
-        }
-
-        public WsTrustSerializationContext WsTrustSerializationContext { get; }
-
-        /// <summary>
-        /// Gets or sets the required element that indicates the request type.
-        /// </summary>
-        public string RequestType { get; }
     }
 }
+ 

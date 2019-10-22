@@ -25,6 +25,8 @@
 //
 //------------------------------------------------------------------------------
 
+#pragma warning disable 1591
+
 namespace Microsoft.IdentityModel.Protocols.WsTrust
 {
     /// <summary>
@@ -33,9 +35,6 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust
     /// </summary>
     public static class WsTrust13Constants
     {
-
-#pragma warning disable 1591
-
         public const string Prefix = "trust";
         public const string Namespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
         public const string SchemaLocation = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/ws-trust-1.3.xsd";

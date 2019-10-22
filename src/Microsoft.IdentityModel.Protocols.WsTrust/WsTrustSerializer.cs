@@ -71,14 +71,15 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust
             if (!string.IsNullOrEmpty(request.Context))
                 writer.WriteAttributeString(WsTrustConstants.Attributes.Context, request.Context);
 
-            // TODO - assuming Issue
-
             writer.WriteStartElement(serializationContext.Prefix, WsTrustConstants.Elements.RequestType, serializationContext.Namespace);
-            writer.WriteString(serializationContext.Issue);
+            writer.WriteString(request.RequestType);
             writer.WriteEndElement();
 
             if (request.AppliesTo != null)
                 WriteAppliesTo(writer, request, serializationContext);
+
+            if (!string.IsNullOrEmpty(request.TokenType))
+                writer.WriteElementString(serializationContext.Prefix, WsTrustConstants.Elements.TokenType, serializationContext.Namespace, request.TokenType);
 
             #region hidden
             /*
