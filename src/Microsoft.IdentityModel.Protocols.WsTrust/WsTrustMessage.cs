@@ -50,7 +50,6 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust
         private string _keyType;
         private string _keyWrapAlgorithm;
         private Lifetime _lifetime;
-        private string _requestType;
         private string _signatureAlgorithm;
         private string _signWith;
         private string _tokenType;
@@ -304,7 +303,6 @@ namespace Microsoft.IdentityModel.Protocols.WsTrust
         /// <summary>
         /// 
         /// </summary>
-
         public UseKey UseKey
         {
             get => _useKey;

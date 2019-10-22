@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
-    <SrcTargets Condition="'$(LocalWilsonBuild)'!='TRUE'">net45;net451;net461;netstandard1.4;netstandard2.0</SrcTargets>
-    <SrcTargets Condition="'$(LocalWilsonBuild)'=='TRUE'">netstandard2.0</SrcTargets>
+    <SrcTargets>net45;net451;net461;netstandard1.4;netstandard2.0</SrcTargets>
     <SrcStandardTargets>netstandard1.4;netstandard2.0</SrcStandardTargets>
   </PropertyGroup>
 </Project>
